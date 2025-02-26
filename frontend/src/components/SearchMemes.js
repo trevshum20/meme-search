@@ -24,31 +24,40 @@ const SearchMemes = () => {
   };
 
   return (
-    <div style={{ textAlign: "center", padding: "20px" }}>
-      <h2>Search Memes</h2>
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Describe a meme..."
-        style={{ padding: "10px", width: "300px" }}
-      />
-      <button onClick={handleSearch} disabled={loading} style={{ marginLeft: "10px", padding: "10px" }}>
-        {loading ? "Searching..." : "Search"}
-      </button>
+    <div className="card shadow-sm p-4">
+      <h2 className="text-center mb-3">Find Memes</h2>
+      
+      <div className="input-group mb-3">
+        <input
+          type="text"
+          className="form-control"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Describe a meme using natural language..."
+        />
+        <button className="btn btn-primary" onClick={handleSearch} disabled={loading} style={{fontSize: "18px", fontWeight: "bolder"}}>
+          {loading ? "Searching..." : "Search"}
+        </button>
+      </div>
 
-      {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
+      {error && <div className="alert alert-danger text-center">{error}</div>}
 
-      <div style={{ marginTop: "20px" }}>
+      <div className="mt-3">
         {results.length > 0 ? (
-          results.map((meme, index) => (
-            <div key={index} style={{ marginBottom: "20px" }}>
-              <img src={meme.imageUrl} alt="Meme" style={{ width: "300px", borderRadius: "10px" }} />
-              <p>{meme.description}</p>
-            </div>
-          ))
+          <div className="row">
+            {results.map((meme, index) => (
+              <div key={index} className="col-md-4 col-sm-6 col-12 mb-3">
+                <div className="card">
+                  <img src={meme.imageUrl} alt="Meme" className="card-img-top" />
+                  <div className="card-body">
+                    <p className="card-text">{meme.description}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
-          !loading && <p>No memes found.</p>
+          !loading && <p className="text-center text-muted">No memes found.</p>
         )}
       </div>
     </div>

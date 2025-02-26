@@ -11,3 +11,172 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+}
+
+footer {
+  margin-top: auto;
+}
+
+.row {
+  justify-content: center;
+}
+
+.recent-memes-container {
+  display: grid;
+  grid-template-columns: repeat(2, min-content); /* Default: 2 small images per row */
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  max-width: fit-content; /* Prevent excessive width */
+  margin: 0 auto; /* Center the grid */
+}
+
+.recent-memes-container a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.meme-thumbnail {
+  width: 60px !important;  /* Force a fixed size */
+  height: 60px !important; /* Force a fixed size */
+  object-fit: cover;
+  border-radius: 5px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+@media (min-width: 768px) { /* Medium screens */
+  .recent-memes-container {
+    grid-template-columns: repeat(4, min-content); /* 4 images per row */
+  }
+}
+
+@media (max-width: 767px) { /* Small screens */
+  .recent-memes-container {
+    grid-template-columns: repeat(3, min-content); /* 3 images per row */
+  }
+}
+
+/******************** Delete Buttons **************************************
+/* Ensure the list group item is positioned correctly */
+.list-group-item {
+  position: relative;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Image container to properly position the trash button */
+.image-container {
+  position: relative;
+  display: inline-block; /* Prevents block-level behavior */
+}
+
+/* Ensure the image itself does not interfere with positioning */
+.image-container img {
+  display: block; /* Removes extra spacing below inline images */
+  max-width: 100%;
+  border-radius: 5px;
+}
+
+/* Position the delete button inside the image container */
+.delete-button {
+  position: absolute;
+  top: -25px;
+  right: -25px;
+  background: rgba(255, 0, 0, 0.8);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10; /* Ensure it's above the image */
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+  opacity: 1; /* Remove hover effect so the trash can is always visible */
+}
+
+.delete-button i {
+  font-size: 16px; /* Adjust size */
+}
+
+/*************** Upload File ***********
+/* Ensure the upload container is centered */
+.upload-container {
+  margin: auto;
+  background: #fff;
+  border-radius: .25rem;
+}
+
+/* Hide the actual file input */
+.hidden-file-input {
+  display: none;
+}
+
+/* Custom button to replace file input */
+.custom-file-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Styled button to replace the file input */
+.custom-file-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.custom-file-button:hover {
+  background-color: #5a6268;
+}
+
+/* Style for selected file name */
+.file-name {
+  font-size: 20px !important;
+  color: #495057;
+  font-weight: bold !important;
+}
+
+/* Style the upload button */
+.upload-button {
+  background-color: #007bff !important;
+  border: none;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  border-radius: 5px;
+  transition: background 0.2s ease-in-out;
+}
+
+.upload-button:hover {
+  background-color: #0056b3 !important;
+  color: white;
+}
+
+.upload-button:disabled {
+  background-color: #6c757d !important;
+  cursor: not-allowed;
+}

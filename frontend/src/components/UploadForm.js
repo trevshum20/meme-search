@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 const UploadForm = () => {
   const [file, setFile] = useState(null);
@@ -7,10 +7,15 @@ const UploadForm = () => {
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
 
+  // Reference for hidden file input
+  const fileInputRef = useRef(null);
+
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
-    setFile(selectedFile);
-    setPreview(URL.createObjectURL(selectedFile));
+    if (selectedFile) {
+      setFile(selectedFile);
+      setPreview(URL.createObjectURL(selectedFile));
+    }
   };
 
   const handleUpload = async () => {
@@ -20,7 +25,6 @@ const UploadForm = () => {
     }
 
     setUploading(true);
-    
     const formData = new FormData();
     formData.append("meme", file);
 
@@ -39,26 +43,54 @@ const UploadForm = () => {
     }
   };
 
+  // Simulate file input click
+  const handleCustomButtonClick = () => {
+    fileInputRef.current.click();
+  };
+
   return (
-    <div style={{ textAlign: "center", padding: "20px" }}>
-      <h2>Upload a Meme</h2>
-      <input type="file" accept="image/*" onChange={handleFileChange} />
-      
+    <div className="card shadow-sm p-4 text-center upload-container">
+      <h2 className="mb-3">Upload a Meme</h2>
+
+      <div className="mb-3">
+        <label className="form-label">Select an Image</label>
+        <div className="custom-file-wrapper">
+          {/* Hidden file input */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden-file-input"
+            accept="image/*"
+            onChange={handleFileChange}
+          />
+          {/* Custom button to trigger file input */}
+          <button className="btn btn-secondary custom-file-button" style={{fontSize: "18px", fontWeight: "bolder"}} onClick={handleCustomButtonClick}>
+            Choose File
+          </button>
+          {/* Display selected file name */}
+          {file && <span className="file-name">{file.name}</span>}
+        </div>
+      </div>
+
       {preview && (
-        <div>
-          <img src={preview} alt="Preview" style={{ width: "300px", marginTop: "10px" }} />
+        <div className="mb-3">
+          <img src={preview} alt="Preview" className="img-fluid rounded shadow-sm" style={{ maxWidth: "100%", maxHeight: "200px" }} />
         </div>
       )}
 
-      <button onClick={handleUpload} disabled={uploading} style={{ marginTop: "10px" }}>
+      <button className="btn upload-button" onClick={handleUpload} disabled={uploading} style={{fontSize: "18px", fontWeight: "bolder"}} >
         {uploading ? "Uploading..." : "Upload"}
       </button>
 
       {imageUrl && (
-        <div style={{ marginTop: "20px" }}>
-          <h3>Uploaded Meme:</h3>
-          <img src={imageUrl} alt="Uploaded Meme" style={{ width: "300px" }} />
-          <p>Image URL: <a href={imageUrl} target="_blank" rel="noopener noreferrer">{imageUrl}</a></p>
+        <div className="mt-3">
+          <h5>Uploaded Meme:</h5>
+          <img src={imageUrl} alt="Uploaded Meme" className="img-fluid rounded shadow-sm mb-2" style={{ maxWidth: "100%", maxHeight: "200px" }} />
+          <p>
+            <a href={imageUrl} target="_blank" rel="noopener noreferrer">
+              View Image
+            </a>
+          </p>
         </div>
       )}
     </div>
