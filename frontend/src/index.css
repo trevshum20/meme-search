@@ -180,3 +180,28 @@ footer {
   background-color: #6c757d !important;
   cursor: not-allowed;
 }
+
+.card-img-top {
+  width: 150px !important; /* Full width of the card */
+  height: 150px !important; /* Set a fixed height (same as width for square) */
+  object-fit: cover; /* Ensures images fill the square without stretching */
+  border-radius: 8px; /* Optional: Rounded corners */
+}
+
+.meme-item {
+  display: flex;
+  justify-content: center;
+}
+
+.meme-container {
+  width: 100%;
+  max-width: 150px; /* Prevents images from stretching too wide */
+}
+
+.meme-img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  min-width: 150px; /* Prevents images from shrinking too much */
+}

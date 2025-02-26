@@ -2,25 +2,24 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const RecentMemes = () => {
+const RecentMemes = ({ refreshTrigger }) => {
   const [memes, setMemes] = useState([]);
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const navigate = useNavigate();
 
+  const fetchRecentMemes = async () => {
+    try {
+      const response = await axios.get("http://localhost:5001/api/recent-memes");
+      setMemes(response.data);
+    } catch (error) {
+      console.error("Error fetching recent memes:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchRecentMemes = async () => {
-      try {
-        const response = await axios.get("http://localhost:5001/api/recent-memes");
-        setMemes(response.data);
-      } catch (error) {
-        console.error("Error fetching recent memes:", error);
-      }
-    };
-
     fetchRecentMemes();
-  }, []);
+  }, [refreshTrigger]); // Refetch when trigger updates
 
-  // Function to delete a meme
   const handleDeleteMeme = async (imageUrl) => {
     try {
       const response = await axios.delete("http://localhost:5001/api/delete-image", {
@@ -28,7 +27,6 @@ const RecentMemes = () => {
       });
 
       if (response.status === 200) {
-        // Remove the deleted meme from the list
         setMemes((prev) => prev.filter((meme) => meme.imageUrl !== imageUrl));
       }
     } catch (error) {
@@ -37,7 +35,7 @@ const RecentMemes = () => {
   };
 
   return (
-    <div className="card shadow-sm p-4" style={{ height: "100%" }}>
+    <div className="card shadow-sm p-4">
       <h4 className="text-center mb-3">Recent Memes</h4>
 
       <div className="list-group mb-3">
@@ -49,23 +47,18 @@ const RecentMemes = () => {
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
-              {/* Container to properly position the image and delete button */}
               <div className="image-container">
                 <a href={meme.imageUrl} target="_blank" rel="noopener noreferrer">
                   <img
                     src={meme.imageUrl}
                     alt="Recent Meme"
-                    className="img-fluid rounded shadow-sm"
+                    className="img-fluid rounded shadow-sm card-img-top"
                     style={{ maxHeight: "150px", objectFit: "cover" }}
                   />
                 </a>
 
-                {/* Trash button appears when hovering */}
                 {hoveredIndex === index && (
-                  <button
-                    className="delete-button"
-                    onClick={() => handleDeleteMeme(meme.imageUrl)}
-                  >
+                  <button className="delete-button" onClick={() => handleDeleteMeme(meme.imageUrl)}>
                     <i className="bi bi-trash"></i>
                   </button>
                 )}
