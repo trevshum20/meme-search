@@ -1,4 +1,5 @@
 import './App.css';
+import SearchMemes from './components/SearchMemes';
 import UploadForm from './components/UploadForm';
 
 function App() {
@@ -6,6 +7,7 @@ function App() {
     <div>
       <h1>Meme Upload Site</h1>
       <UploadForm />
+      <SearchMemes />
     </div>
   );
 }
