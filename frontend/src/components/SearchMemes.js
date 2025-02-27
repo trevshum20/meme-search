@@ -12,6 +12,8 @@ const SearchMemes = ({ onMemeDeleted }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [hoveredIndex, setHoveredIndex] = useState(null);
+  const BACKEND_BASE_URL = process.env.REACT_APP_BACKEND_BASE_URL;
+
 
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -21,7 +23,7 @@ const SearchMemes = ({ onMemeDeleted }) => {
     try {
       const token = await getFirebaseToken();
       const response = await axios.get(
-        `http://localhost:5001/api/search?query=${encodeURIComponent(query)}`,
+        `${BACKEND_BASE_URL}/api/search?query=${encodeURIComponent(query)}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -39,7 +41,7 @@ const SearchMemes = ({ onMemeDeleted }) => {
     try {
       const token = await getFirebaseToken();
       const response = await axios.delete(
-        "http://localhost:5001/api/delete-image",
+        `${BACKEND_BASE_URL}/api/delete-image`,
         {
           headers: { Authorization: `Bearer ${token}` },
           data: { imageUrl },
@@ -108,18 +110,25 @@ const SearchMemes = ({ onMemeDeleted }) => {
         <div className="meme-grid-search">
           {displayedResults.length > 0
             ? displayedResults.map((meme, index) => (
-                <div key={index} className="meme-card">
+                <div 
+                  key={index}
+                  className="meme-card meme-card-search"
+                  onMouseEnter={() => setHoveredIndex(index)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                >
                   <div className="position-relative card card-img shadow-sm">
                     <a
                       href={meme.imageUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <img
-                        src={meme.imageUrl}
-                        alt="Meme"
-                        className="card-img-top"
-                      />
+                      <div className="image-wrapper">
+                        <img
+                          src={meme.imageUrl}
+                          alt="Meme"
+                          className="card-img-top"
+                        />
+                      </div>
                     </a>
 
                     {hoveredIndex === index && (

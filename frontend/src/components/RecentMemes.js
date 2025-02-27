@@ -10,12 +10,13 @@ const RecentMemes = ({ refreshTrigger }) => {
   const [memes, setMemes] = useState([]);
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const navigate = useNavigate();
+  const BACKEND_BASE_URL = process.env.REACT_APP_BACKEND_BASE_URL;
 
   const fetchRecentMemes = async () => {
     try {
       const token = await getFirebaseToken();
       const response = await axios.get(
-        "http://localhost:5001/api/recent-memes",
+        `${BACKEND_BASE_URL}/api/recent-memes`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -34,7 +35,7 @@ const RecentMemes = ({ refreshTrigger }) => {
     try {
       const token = await getFirebaseToken();
       const response = await axios.delete(
-        "http://localhost:5001/api/delete-image",
+        `${BACKEND_BASE_URL}/api/delete-image`,
         {
           headers: { Authorization: `Bearer ${token}` },
           data: { imageUrl },
@@ -72,11 +73,13 @@ const RecentMemes = ({ refreshTrigger }) => {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <img
-                      src={meme.imageUrl}
-                      alt="Recent Meme"
-                      className="card-img-top"
-                    />
+                    <div className="image-wrapper">
+                      <img
+                        src={meme.imageUrl}
+                        alt="Recent Meme"
+                        className="card-img-top"
+                      />
+                    </div>
                   </a>
 
                   {hoveredIndex === index && (
@@ -97,11 +100,11 @@ const RecentMemes = ({ refreshTrigger }) => {
       </div>
       <div style={{ textAlign: "center" }}>
         <button
-          className="btn btn-outline-primary w-100"
+          className="btn btn-outline-primary w-100 fw-bold"
           onClick={() => navigate("/all-memes")}
           style={{ maxWidth: "300px" }}
         >
-          View All Memes
+          <b>View All Memes</b>
         </button>
       </div>
       <br></br>

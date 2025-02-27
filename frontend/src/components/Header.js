@@ -53,21 +53,11 @@ const Header = () => {
                 About
               </Link>
             </li>
-            <li className="nav-item">
-              <a
-                href="https://trevorshumway.com"
-                className="nav-link text-primary"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                trevorshumway.com
-              </a>
-            </li>
             {/* Show Logout Button When Logged In */}
             {user && (
               <li className="nav-item">
                 <button className="btn btn-outline-danger ms-3" onClick={logout}>
-                  Logout
+                  <b>Logout</b>
                 </button>
               </li>
             )}

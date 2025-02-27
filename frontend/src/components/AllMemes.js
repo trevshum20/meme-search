@@ -7,14 +7,19 @@ import "./MemeGrid.css";
 const AllMemes = () => {
   const [memes, setMemes] = useState([]);
   const [hoveredIndex, setHoveredIndex] = useState(null);
+  const BACKEND_BASE_URL = process.env.REACT_APP_BACKEND_BASE_URL;
+
 
   useEffect(() => {
     const fetchAllMemes = async () => {
       try {
         const token = await getFirebaseToken();
-        const response = await axios.get("http://localhost:5001/api/all-memes", {
-          headers: { Authorization: `Bearer ${token}`},
-        });
+        const response = await axios.get(
+          `${BACKEND_BASE_URL}/api/all-memes`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setMemes(response.data);
       } catch (error) {
         console.error("Error fetching all memes:", error);
@@ -26,9 +31,12 @@ const AllMemes = () => {
 
   const handleDeleteMeme = async (imageUrl) => {
     try {
-      const response = await axios.delete("http://localhost:5001/api/delete-image", {
-        data: { imageUrl },
-      });
+      const response = await axios.delete(
+        `${BACKEND_BASE_URL}/api/delete-image`,
+        {
+          data: { imageUrl },
+        }
+      );
 
       if (response.status === 200) {
         setMemes((prev) => prev.filter((meme) => meme.imageUrl !== imageUrl));
@@ -41,7 +49,7 @@ const AllMemes = () => {
   return (
     <div className="container-fluid mt-4">
       <h2 className="text-center mb-4">All Memes</h2>
-  
+
       {memes.length > 0 ? (
         <div className="meme-grid">
           {memes.map((meme, index) => (
@@ -52,17 +60,27 @@ const AllMemes = () => {
               onMouseLeave={() => setHoveredIndex(null)}
             >
               <div className="position-relative card card-img shadow-sm">
-                <a href={meme.imageUrl} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
-                  <img
-                    src={meme.imageUrl}
-                    alt="Meme"
-                    className="card-img-top"
-                    style={{ objectFit: "cover" }}
-                  />
+                <a
+                  href={meme.imageUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-decoration-none"
+                >
+                  <div className="image-wrapper">
+                    <img
+                      src={meme.imageUrl}
+                      alt="Meme"
+                      className="card-img-top"
+                      style={{ objectFit: "cover" }}
+                    />
+                  </div>
                 </a>
-  
+
                 {hoveredIndex === index && (
-                  <button className="delete-button" onClick={() => handleDeleteMeme(meme.imageUrl)}>
+                  <button
+                    className="delete-button"
+                    onClick={() => handleDeleteMeme(meme.imageUrl)}
+                  >
                     <i className="bi bi-trash"></i>
                   </button>
                 )}
@@ -74,7 +92,7 @@ const AllMemes = () => {
         <p className="text-center text-muted">No memes available.</p>
       )}
     </div>
-  );  
+  );
 };
 
 export default AllMemes;
