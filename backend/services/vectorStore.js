@@ -1,10 +1,5 @@
 const { Pinecone } = require("@pinecone-database/pinecone");
-require("dotenv").config();
-const { OpenAI } = require("openai");
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const { generateEmbedding } = require("./memeProcessor");
 
 const pc = new Pinecone({
     apiKey: process.env.PINECONE_API_KEY,
@@ -23,12 +18,7 @@ const NAMESPACE = "meme";
 async function storeMemeDescription(imageUrl, description) {
   try {
     // Convert the description into a vector
-    const embeddingResponse = await openai.embeddings.create({
-      model: "text-embedding-ada-002",
-      input: description,
-    });
-
-    const vector = embeddingResponse.data[0].embedding;
+    const vector = await generateEmbedding(description);
     
     // Store in Pinecone
     await index.namespace(NAMESPACE).upsert([
@@ -53,12 +43,7 @@ async function storeMemeDescription(imageUrl, description) {
 async function searchMemes(query) {
     try {
       // Convert search query to embedding
-      const embeddingResponse = await openai.embeddings.create({
-        model: "text-embedding-ada-002",
-        input: query,
-      });
-  
-      const queryVector = embeddingResponse.data[0].embedding;
+      const queryVector = await generateEmbedding(query);
   
       // Search Pinecone for similar memes
       const result = await index.namespace(NAMESPACE).query({
