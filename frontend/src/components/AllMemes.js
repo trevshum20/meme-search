@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { getFirebaseToken } from "../firebase";
 
 const AllMemes = () => {
   const [memes, setMemes] = useState([]);
@@ -8,7 +9,10 @@ const AllMemes = () => {
   useEffect(() => {
     const fetchAllMemes = async () => {
       try {
-        const response = await axios.get("http://localhost:5001/api/all-memes");
+        const token = await getFirebaseToken();
+        const response = await axios.get("http://localhost:5001/api/all-memes", {
+          headers: { Authorization: `Bearer ${token}`},
+        });
         setMemes(response.data);
       } catch (error) {
         console.error("Error fetching all memes:", error);

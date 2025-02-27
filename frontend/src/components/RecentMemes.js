@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getFirebaseToken } from "../firebase";
 
 const RecentMemes = ({ refreshTrigger }) => {
   const [memes, setMemes] = useState([]);
@@ -9,7 +10,10 @@ const RecentMemes = ({ refreshTrigger }) => {
 
   const fetchRecentMemes = async () => {
     try {
-      const response = await axios.get("http://localhost:5001/api/recent-memes");
+      const token = await getFirebaseToken();
+      const response = await axios.get("http://localhost:5001/api/recent-memes", {
+        headers: { Authorization: `Bearer ${token}`},
+      });
       setMemes(response.data);
     } catch (error) {
       console.error("Error fetching recent memes:", error);
@@ -22,7 +26,9 @@ const RecentMemes = ({ refreshTrigger }) => {
 
   const handleDeleteMeme = async (imageUrl) => {
     try {
+      const token = await getFirebaseToken();
       const response = await axios.delete("http://localhost:5001/api/delete-image", {
+        headers: { Authorization: `Bearer ${token}` },
         data: { imageUrl },
       });
 
@@ -36,7 +42,7 @@ const RecentMemes = ({ refreshTrigger }) => {
 
   return (
     <div className="card shadow-sm p-4">
-      <h4 className="text-center mb-3">Recent Memes</h4>
+      <h4 className="text-center mb-3"><b>Recent Memes</b></h4>
 
       <div className="list-group mb-3">
         {memes.length > 0 ? (

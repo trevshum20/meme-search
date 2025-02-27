@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useRef, useState } from "react";
+import { getFirebaseToken } from "../firebase";
 
 const UploadForm = ({ onUploadSuccess }) => {
   const [file, setFile] = useState(null);
@@ -28,8 +29,9 @@ const UploadForm = ({ onUploadSuccess }) => {
     formData.append("meme", file);
 
     try {
+      const token = await getFirebaseToken();
       await axios.post("http://localhost:5001/api/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}`},
       });
 
       alert("Upload successful!");
@@ -53,7 +55,7 @@ const UploadForm = ({ onUploadSuccess }) => {
 
   return (
     <div className="card shadow-sm p-4 text-center upload-container">
-      <h2 className="mb-3">Upload a Meme</h2>
+      <h2 className="mb-3"><b>Upload a Meme</b></h2>
 
       <div className="mb-3">
         <label className="form-label">Select an Image</label>

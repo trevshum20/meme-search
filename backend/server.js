@@ -3,6 +3,7 @@ const cors = require("cors");
 const { deleteVector, storeMemeDescription, searchMemes } = require("./services/vectorStore");
 const { uploadMiddleware, listAllMemes, deleteFromS3 } = require("./services/s3Helper");
 const { getMemeDescriptionFromOpenAI } = require("./services/memeProcessor");
+const { verifyAuth } = require("./services/authService");
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -11,13 +12,42 @@ const PORT = process.env.PORT || 5001;
 app.use(cors({
   origin: "http://localhost:3000",
   methods: "GET,POST,DELETE",
-  allowedHeaders: "Content-Type"
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
 }));
 app.use(express.json());
 
 /**
- *********************** ROUTES **************************
+ *******************************************************************************
+ ********************************* ROUTES **************************************
+ *******************************************************************************
  */
+
+/**
+ * *************************** Publicly Accessible *****************************
+ */
+
+// Home
+app.get("/", (req, res) => {
+    res.send("Hello, World!");
+  });
+  
+// Health
+  app.get("/health", (req, res) => {
+      res.status(200).json({ status: "ok" });
+  });
+
+/**
+ * ********************** Protected Behind Firebase Auth  **********************
+ */
+
+// Protect all API routes with Firebase authentication
+app.use("/api", verifyAuth);
+
+// Test authentication route
+app.get("/api/protected-route", (req, res) => {
+    res.json({ message: `Hello, ${req.user.email}! You are authenticated.` });
+});
 
 /**
  * ************* Upload Image
@@ -91,23 +121,5 @@ app.delete("/api/delete-image", async (req, res) => {
     res.status(500).json({ error: "Failed to delete image or vector" });
   }
 });
-
-/**
- * ************* Home
- */
-app.get("/", (req, res) => {
-  res.send("Hello, World!");
-});
-
-/**
- * ************* Health
- */
-app.get("/health", (req, res) => {
-    res.status(200).json({ status: "ok" });
-});
-
-/**
- *********************** HELPER FUNCTIONS **************************
- */
 
 module.exports = app;

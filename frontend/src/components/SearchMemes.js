@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
+import { getFirebaseToken } from "../firebase";
 
 const SearchMemes = ({ onMemeDeleted }) => {
   const [query, setQuery] = useState("");
@@ -14,7 +15,10 @@ const SearchMemes = ({ onMemeDeleted }) => {
     setError("");
 
     try {
-      const response = await axios.get(`http://localhost:5001/api/search?query=${encodeURIComponent(query)}`);
+      const token = await getFirebaseToken();
+      const response = await axios.get(`http://localhost:5001/api/search?query=${encodeURIComponent(query)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setResults(response.data);
     } catch (err) {
       console.error("Search failed:", err);
@@ -26,7 +30,9 @@ const SearchMemes = ({ onMemeDeleted }) => {
 
   const handleDeleteMeme = async (imageUrl) => {
     try {
+      const token = await getFirebaseToken();
       const response = await axios.delete("http://localhost:5001/api/delete-image", {
+        headers: { Authorization: `Bearer ${token}` },
         data: { imageUrl },
       });
 
@@ -41,7 +47,7 @@ const SearchMemes = ({ onMemeDeleted }) => {
 
   return (
     <div className="card shadow-sm p-4">
-      <h2 className="text-center mb-3">Find Memes</h2>
+      <h2 className="text-center mb-3"><b>Find Memes</b></h2>
 
       <div className="input-group mb-3">
         <input
