@@ -1,0 +1,21 @@
+.meme-grid-search {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 3rem;
+    max-width: 90vw;
+    margin: 0 auto;
+    padding: 1rem 1rem;
+  }
+  
+  @media (max-width: 1057px) {
+    .meme-grid-search {
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .meme-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  

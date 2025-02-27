@@ -1,0 +1,42 @@
+.meme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 4rem;
+  max-width: 90vw;
+  margin: 0 auto;
+  padding: 1rem 1rem;
+}
+
+.meme-card {
+  width: 100%;
+  aspect-ratio: 1 / 1; /* Forces square shape */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Ensures content doesn't affect height */
+  align-items: center;
+  overflow: hidden;
+  border-radius: 10px;
+  background-color: white; /* Ensures consistent card color */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Image Wrapper: Enforces a Square Shape */
+.image-wrapper {
+  width: 100%;
+  aspect-ratio: 1 / 1; /* Maintains a perfect square without relying on padding */
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ensures the image fills the wrapper properly */
+.card-img-top {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures images fill the square without stretching */
+  border-radius: 10px;
+  position: relative; /* Fixes Bootstrap overriding position */
+}

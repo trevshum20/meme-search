@@ -98,7 +98,7 @@ app.get("/api/all-memes", async (req, res) => {
 app.get("/api/recent-memes", async (req, res) => {
   try {
     const memeUrls = await listAllMemes();
-    res.json(memeUrls.slice(0, 10)); // Return last 10
+    res.json(memeUrls.slice(-10)); // Return last 10
   } catch (error) {
     console.error("Error fetching recent memes:", error);
     res.status(500).json({ error: "Failed to fetch recent memes" });

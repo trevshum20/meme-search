@@ -1,8 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
 import App from './App';
+import "./components/RecentMemes.css";
+import "./components/SearchMemes.css";
+import "./components/UploadForm.css";
+import './index.css';
+
+
 import reportWebVitals from './reportWebVitals';
+
+console.log("CSS Loaded!"); // Check if this logs to confirm the file is processed
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

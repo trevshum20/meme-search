@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useRef, useState } from "react";
 import { getFirebaseToken } from "../firebase";
+import "./UploadForm";
 
 const UploadForm = ({ onUploadSuccess }) => {
   const [file, setFile] = useState(null);
@@ -83,6 +84,8 @@ const UploadForm = ({ onUploadSuccess }) => {
       <button className="btn upload-button" onClick={handleUpload} disabled={uploading} style={{fontSize: "18px", fontWeight: "bolder"}} >
         {uploading ? "Uploading..." : "Upload"}
       </button>
+      {/* Space below the heading */}
+      <div style={{ height: "2px" }}></div>
     </div>
   );
 };

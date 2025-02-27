@@ -2,7 +2,7 @@ import React from "react";
 
 const About = () => {
   return (
-    <div className="container mt-5">
+    <div className="mt-5 container-fluid">
       <div className="row align-items-center" >
         {/* Image Section */}
         <div className="col-md-6 text-center">
@@ -30,7 +30,7 @@ const About = () => {
           </p>
 
           <h4 className="fw-bold text-secondary mt-4">How It Works:</h4>
-          <ul className="list-group list-group-flush">
+          <ul className="list-group list-group-flush" >
             <li className="list-group-item">
               📂 Meme Upload - Upload your memes, and they are stored securely in AWS S3.
             </li>
@@ -45,7 +45,7 @@ const About = () => {
               query into a vector representation.
             </li>
             <li className="list-group-item">
-              ⚡ AI-Powered Retrieval - The app finds and returns the top 5 most relevant memes based on similarity.
+              ⚡ AI-Powered Retrieval - The app finds and returns most relevant memes based on similarity.
             </li>
           </ul>
 

@@ -1,6 +1,8 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { getFirebaseToken } from "../firebase";
+import "./DeleteButton.css";
+import "./MemeGrid.css";
 
 const AllMemes = () => {
   const [memes, setMemes] = useState([]);
@@ -37,19 +39,19 @@ const AllMemes = () => {
   };
 
   return (
-    <div className="container mt-4">
+    <div className="container-fluid mt-4">
       <h2 className="text-center mb-4">All Memes</h2>
-
+  
       {memes.length > 0 ? (
-        <div className="row g-4">
+        <div className="meme-grid">
           {memes.map((meme, index) => (
             <div
               key={index}
-              className="col-lg-3 col-md-4 col-sm-6"
+              className="meme-card"
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
-              <div className="position-relative card card-img shadow-sm justify-content-center">
+              <div className="position-relative card card-img shadow-sm">
                 <a href={meme.imageUrl} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
                   <img
                     src={meme.imageUrl}
@@ -58,7 +60,7 @@ const AllMemes = () => {
                     style={{ objectFit: "cover" }}
                   />
                 </a>
-
+  
                 {hoveredIndex === index && (
                   <button className="delete-button" onClick={() => handleDeleteMeme(meme.imageUrl)}>
                     <i className="bi bi-trash"></i>
@@ -72,7 +74,7 @@ const AllMemes = () => {
         <p className="text-center text-muted">No memes available.</p>
       )}
     </div>
-  );
+  );  
 };
 
 export default AllMemes;

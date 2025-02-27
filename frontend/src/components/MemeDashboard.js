@@ -15,16 +15,20 @@ const MemeDashboard = () => {
   };
 
   return (
-    <div className="row gy-4 justify-content-center">
-      <div className="col-lg-5 col-md-6 col-12">
-        <SearchMemes onMemeDeleted={handleMemeDeleted}/>
+    <div className="dashboard-container">
+      <div className="row gy-4 justify-content-center">
+        <div className="col-lg-6 col-md-12 col-12">
+          <SearchMemes onMemeDeleted={handleMemeDeleted} />
+        </div>
+        <div className="col-lg-6 col-md-12 col-12">
+          <UploadForm onUploadSuccess={handleUploadSuccess} />
+        </div>
       </div>
-      <div className="col-lg-5 col-md-6 col-12">
-        <UploadForm onUploadSuccess={handleUploadSuccess} />
-      </div>
-      <div className="col-lg-2 col-md-12 col-12">
+      <br></br>
+      <div className="recent-memes-section">
         <RecentMemes refreshTrigger={refreshTrigger} />
       </div>
+      <br></br>
     </div>
   );
 };

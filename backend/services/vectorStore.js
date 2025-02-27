@@ -41,27 +41,35 @@ async function storeMemeDescription(imageUrl, description) {
  * @returns {Array} - List of matching memes with image URLs and descriptions.
  */
 async function searchMemes(query) {
-    try {
+  try {
       // Convert search query to embedding
       const queryVector = await generateEmbedding(query);
-  
-      // Search Pinecone for similar memes
+
+      // Search Pinecone for similar memes (increase topK temporarily)
       const result = await index.namespace(NAMESPACE).query({
-        vector: queryVector,
-        topK: 5,
-        includeMetadata: true,
+          vector: queryVector,
+          topK: 10, // Increase topK to ensure we get enough results
+          includeMetadata: true,
       });
-  
-      return result.matches.map(match => ({
-        imageUrl: match.metadata.imageUrl,
-        description: match.metadata.description,
-        score: match.score,
-      }));
-    } catch (error) {
+
+      // Set a similarity score threshold (adjust as needed)
+      const SCORE_THRESHOLD = 0.8; // Only return memes with a score ≥ 0.75
+
+      // Filter results based on the threshold
+      const filteredResults = result.matches
+          .filter(match => match.score >= SCORE_THRESHOLD) // Keep only relevant memes
+          .map(match => ({
+              imageUrl: match.metadata.imageUrl,
+              description: match.metadata.description,
+              score: match.score,
+          }));
+
+      return filteredResults;
+  } catch (error) {
       console.error("Error searching memes in Pinecone:", error);
       return [];
-    }
   }
+}
 
   async function deleteVector(url) {
     try {
