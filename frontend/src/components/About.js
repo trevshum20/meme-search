@@ -3,7 +3,7 @@ import React from "react";
 const About = () => {
   return (
     <div className="container mt-5">
-      <div className="row align-items-center">
+      <div className="row align-items-center" >
         {/* Image Section */}
         <div className="col-md-6 text-center">
           <img
@@ -17,10 +17,10 @@ const About = () => {
         <div className="col-md-6">
           <h1 className="fw-bold text-primary">About Smart Meme Index</h1>
           <p className="lead">
-            Memes have been a core part of internet culture for years (over a decade for me).
+            Memes have been a core part of internet culture for years.
             However, finding a specific meme can be surprisingly difficult. Whether it's buried
             in your camera roll, lost in a group chat, or impossible to find through traditional
-            search engines, meme discovery is frustrating.
+            search engines, meme remembering and retrieval can be frustrating.
           </p>
 
           <p>
@@ -38,7 +38,7 @@ const About = () => {
               📝 AI Meme Analysis - OpenAI analyzes and generates a concise summary of the meme.
             </li>
             <li className="list-group-item">
-              🧠 Vectorized Search - The AI-generated summary is stored in Pinecone (Vector Database).
+              🧠 Vectorized Database - The AI-generated summary is stored in Pinecone (Vector Database).
             </li>
             <li className="list-group-item">
               🔍 Natural Language Search - When searching for a meme, OpenAI converts your 
@@ -50,7 +50,7 @@ const About = () => {
           </ul>
 
           <p className="mt-3">
-            This app reinvents meme searching by leveraging machine learning and vector search technology 
+            This app reinvents meme searching by leveraging artificial intelligence and vector search technology 
             to help you quickly find memes using simple descriptions. Whether you remember a funny caption, 
             a vague description, or a meme's theme, this app will find it for you!
           </p>

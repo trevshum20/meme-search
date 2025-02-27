@@ -48,7 +48,8 @@ const SearchMemes = ({ onMemeDeleted }) => {
   return (
     <div className="card shadow-sm p-4">
       <h2 className="text-center mb-3"><b>Find Memes</b></h2>
-
+      {/* <label className="form-label">Select an Image</label> */}
+      <div style={{ height: "29px" }}></div>
       <div className="input-group mb-3">
         <input
           type="text"

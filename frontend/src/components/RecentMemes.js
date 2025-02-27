@@ -53,7 +53,7 @@ const RecentMemes = ({ refreshTrigger }) => {
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
-              <div className="image-container">
+              <div className="image-container card-img">
                 <a href={meme.imageUrl} target="_blank" rel="noopener noreferrer">
                   <img
                     src={meme.imageUrl}

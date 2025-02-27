@@ -181,9 +181,14 @@ footer {
   cursor: not-allowed;
 }
 
+.card-img {
+  width: 150px !important; 
+  height: 150px !important;
+}
+
 .card-img-top {
-  width: 150px !important; /* Full width of the card */
-  height: 150px !important; /* Set a fixed height (same as width for square) */
+  /* width: 150px !important; 
+  height: 150px !important; */
   object-fit: cover; /* Ensures images fill the square without stretching */
   border-radius: 8px; /* Optional: Rounded corners */
 }

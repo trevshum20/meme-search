@@ -15,14 +15,6 @@ const MemeDashboard = () => {
   };
 
   return (
-    // <div className="row">
-    //   <div className="col-md-8">
-    //     <UploadForm onUploadSuccess={handleUploadSuccess} />
-    //   </div>
-    //   <div className="col-md-4">
-    //     <RecentMemes refreshTrigger={refreshTrigger} />
-    //   </div>
-    // </div>
     <div className="row gy-4 justify-content-center">
       <div className="col-lg-5 col-md-6 col-12">
         <SearchMemes onMemeDeleted={handleMemeDeleted}/>

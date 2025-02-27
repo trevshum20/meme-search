@@ -49,13 +49,13 @@ const AllMemes = () => {
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
-              <div className="position-relative card shadow-sm">
+              <div className="position-relative card card-img shadow-sm justify-content-center">
                 <a href={meme.imageUrl} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
                   <img
                     src={meme.imageUrl}
                     alt="Meme"
                     className="card-img-top"
-                    style={{ objectFit: "cover", height: "200px" }}
+                    style={{ objectFit: "cover" }}
                   />
                 </a>
 
