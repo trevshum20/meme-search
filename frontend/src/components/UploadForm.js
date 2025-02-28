@@ -130,6 +130,15 @@ const UploadForm = ({ onUploadSuccess, user }) => {
       >
         {uploading ? "Uploading..." : "Upload"}
       </button>
+
+      <div>
+        <br></br>
+        {selectedFiles.length > 0 && (
+          <button className="btn btn-secondary cancel-upload-button" onClick={ () => setSelectedFiles([])}>
+            <b>Cancel Upload</b>
+          </button>
+        )}
+    </div>
     </div>
   );
 };

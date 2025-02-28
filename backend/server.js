@@ -21,6 +21,7 @@ const {
 const app = express();
 const PORT = process.env.PORT || 5001;
 const allowedOrigin = process.env.ALLOWED_ORIGIN || "http://localhost:3000";
+const NUMBER_OF_RECENT_MEMES = 12;
 
 // Enable CORS
 app.use(
@@ -77,8 +78,6 @@ app.post("/api/upload", uploadMiddleware.array("memes", 10), async (req, res) =>
     return res.status(400).json({ error: "Missing user email" }); // Ensure email is provided
   }
 
-  console.log(`Uploading meme for: ${userEmail}`);
-
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ error: "No file uploaded" });
   }
@@ -104,8 +103,7 @@ app.post("/api/upload", uploadMiddleware.array("memes", 10), async (req, res) =>
       if (!description) {
         throw new Error("Failed to get meme description from OpenAI");
       }
-
-      console.log(">>> Description: ", description);
+      
       await storeMemeDescription(imageUrl, description, userEmail);
       await addMemeOwnershipRecord(userEmail, imageUrl);
 
@@ -161,10 +159,9 @@ app.get("/api/all-memes", async (req, res) => {
 });
 
 /**
- * ************* Get Recent memes (last 10)
+ * ************* Get Recent memes
  */
 app.get("/api/recent-memes", async (req, res) => {
-  // console.log(">>> Hit recent memes");
   try {
     const { userEmail } = req.query;
 
@@ -173,7 +170,7 @@ app.get("/api/recent-memes", async (req, res) => {
     }
 
     const memeUrls = await getUserOwnedMemes(userEmail);
-    res.json(memeUrls.slice(-10)); // Return last 10
+    res.json(memeUrls.slice(-NUMBER_OF_RECENT_MEMES));
   } catch (error) {
     console.error("Error fetching recent memes:", error);
     res.status(500).json({ error: "Failed to fetch recent memes" });

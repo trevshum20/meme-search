@@ -147,6 +147,7 @@ const SearchMemes = ({ onMemeDeleted, user }) => {
                 <p className="text-center text-muted">No memes found.</p>
               )}
         </div>
+        <div style={{ height: "21px" }}></div>
         {/* "Done" Button: Clears Search */}
         {results.length > 0 && (
           <div className="text-center mt-3">
@@ -157,7 +158,7 @@ const SearchMemes = ({ onMemeDeleted, user }) => {
                 setResults([]);
               }}
             >
-              Done
+              <b>Done</b>
             </button>
           </div>
         )}

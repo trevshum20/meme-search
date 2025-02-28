@@ -7,7 +7,7 @@ const pc = new Pinecone({
 
 // Get Pinecone Index
 const index = pc.index(process.env.PINECONE_INDEX_NAME, process.env.PINECONE_INDEX_HOST)
-
+const SCORE_THRESHOLD = 0.75;
 const NAMESPACE = "meme";
 
 /**
@@ -51,9 +51,6 @@ async function searchMemes(query, userEmail) {
           topK: 10, // Increase topK to ensure we get enough results
           includeMetadata: true,
       });
-
-      // Set a similarity score threshold (adjust as needed)
-      const SCORE_THRESHOLD = 0.8; // Only return memes with a score ≥ 0.75
 
       // Filter results based on the threshold
       const filteredResults = result.matches
