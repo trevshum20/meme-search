@@ -15,17 +15,17 @@ const NAMESPACE = "meme";
  * @param {string} imageUrl - URL of the meme stored in S3.
  * @param {string} description - Text description of the meme.
  */
-async function storeMemeDescription(imageUrl, description) {
+async function storeMemeDescription(imageUrl, description, userEmail) {
   try {
     // Convert the description into a vector
     const vector = await generateEmbedding(description);
     
     // Store in Pinecone
-    await index.namespace(NAMESPACE).upsert([
+    await index.namespace(userEmail).upsert([
       {
         id: imageUrl, // Use the image URL as the unique ID
         values: vector,
-        metadata: { description, imageUrl },
+        metadata: { description, imageUrl, userEmail },
       },
     ]);
 
@@ -40,13 +40,13 @@ async function storeMemeDescription(imageUrl, description) {
  * @param {string} query - User's natural language search query.
  * @returns {Array} - List of matching memes with image URLs and descriptions.
  */
-async function searchMemes(query) {
+async function searchMemes(query, userEmail) {
   try {
       // Convert search query to embedding
       const queryVector = await generateEmbedding(query);
 
       // Search Pinecone for similar memes (increase topK temporarily)
-      const result = await index.namespace(NAMESPACE).query({
+      const result = await index.namespace(userEmail).query({
           vector: queryVector,
           topK: 10, // Increase topK to ensure we get enough results
           includeMetadata: true,
@@ -71,9 +71,9 @@ async function searchMemes(query) {
   }
 }
 
-  async function deleteVector(url) {
+  async function deleteVector(url, userEmail) {
     try {
-      await index.namespace(NAMESPACE).deleteOne(url);
+      await index.namespace(userEmail).deleteOne(url);
     } catch (error) {
       console.error(`Error deleting vector for ${url} from Pinecone: `, error);
     }

@@ -4,7 +4,7 @@ import { getFirebaseToken } from "../firebase";
 import "./DeleteButton.css";
 import "./MemeGrid.css";
 
-const AllMemes = () => {
+const AllMemes = ({user}) => {
   const [memes, setMemes] = useState([]);
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const BACKEND_BASE_URL = process.env.REACT_APP_BACKEND_BASE_URL;
@@ -15,7 +15,7 @@ const AllMemes = () => {
       try {
         const token = await getFirebaseToken();
         const response = await axios.get(
-          `${BACKEND_BASE_URL}/api/all-memes`,
+          `${BACKEND_BASE_URL}/api/all-memes?userEmail=${encodeURIComponent(user.email)}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -34,12 +34,12 @@ const AllMemes = () => {
       const response = await axios.delete(
         `${BACKEND_BASE_URL}/api/delete-image`,
         {
-          data: { imageUrl },
+          data: { imageUrl, userEmail: user.email },
         }
       );
 
       if (response.status === 200) {
-        setMemes((prev) => prev.filter((meme) => meme.imageUrl !== imageUrl));
+        setMemes((prev) => prev.filter((meme) => meme.s3Url !== imageUrl));
       }
     } catch (error) {
       console.error("Error deleting meme:", error);
@@ -48,7 +48,7 @@ const AllMemes = () => {
 
   return (
     <div className="container-fluid mt-4">
-      <h2 className="text-center mb-4">All Memes</h2>
+      <h2 className="text-center mb-4"><b>All Memes</b></h2>
 
       {memes.length > 0 ? (
         <div className="meme-grid">
@@ -61,14 +61,14 @@ const AllMemes = () => {
             >
               <div className="position-relative card card-img shadow-sm">
                 <a
-                  href={meme.imageUrl}
+                  href={meme.s3Url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-decoration-none"
                 >
                   <div className="image-wrapper">
                     <img
-                      src={meme.imageUrl}
+                      src={meme.s3Url}
                       alt="Meme"
                       className="card-img-top"
                       style={{ objectFit: "cover" }}
@@ -79,7 +79,7 @@ const AllMemes = () => {
                 {hoveredIndex === index && (
                   <button
                     className="delete-button"
-                    onClick={() => handleDeleteMeme(meme.imageUrl)}
+                    onClick={() => handleDeleteMeme(meme.s3Url)}
                   >
                     <i className="bi bi-trash"></i>
                   </button>

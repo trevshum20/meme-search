@@ -3,7 +3,7 @@ import RecentMemes from "./RecentMemes";
 import SearchMemes from "./SearchMemes";
 import UploadForm from "./UploadForm";
 
-const MemeDashboard = () => {
+const MemeDashboard = ({ user }) => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleUploadSuccess = () => {
@@ -18,15 +18,15 @@ const MemeDashboard = () => {
     <div className="dashboard-container">
       <div className="row gy-4 justify-content-center">
         <div className="col-lg-6 col-md-12 col-12">
-          <SearchMemes onMemeDeleted={handleMemeDeleted} />
+          <SearchMemes onMemeDeleted={handleMemeDeleted} user={user}/>
         </div>
         <div className="col-lg-6 col-md-12 col-12">
-          <UploadForm onUploadSuccess={handleUploadSuccess} />
+          <UploadForm onUploadSuccess={handleUploadSuccess} user={user}/>
         </div>
       </div>
       <br></br>
       <div className="recent-memes-section">
-        <RecentMemes refreshTrigger={refreshTrigger} />
+        <RecentMemes refreshTrigger={refreshTrigger} user={user}/>
       </div>
       <br></br>
     </div>

@@ -6,7 +6,7 @@ import "./DeleteButton.css";
 import "./MemeGrid.css";
 import "./RecentMemes.css";
 
-const RecentMemes = ({ refreshTrigger }) => {
+const RecentMemes = ({ refreshTrigger, user }) => {
   const [memes, setMemes] = useState([]);
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const navigate = useNavigate();
@@ -16,12 +16,13 @@ const RecentMemes = ({ refreshTrigger }) => {
     try {
       const token = await getFirebaseToken();
       const response = await axios.get(
-        `${BACKEND_BASE_URL}/api/recent-memes`,
+        `${BACKEND_BASE_URL}/api/recent-memes?userEmail=${encodeURIComponent(user.email)}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setMemes(response.data);
+      console.log(`>>> Images: `, response.data);
+      setMemes(response.data.reverse());
     } catch (error) {
       console.error("Error fetching recent memes:", error);
     }
@@ -38,12 +39,12 @@ const RecentMemes = ({ refreshTrigger }) => {
         `${BACKEND_BASE_URL}/api/delete-image`,
         {
           headers: { Authorization: `Bearer ${token}` },
-          data: { imageUrl },
+          data: { imageUrl, userEmail: user.email },
         }
       );
 
       if (response.status === 200) {
-        setMemes((prev) => prev.filter((meme) => meme.imageUrl !== imageUrl));
+        setMemes((prev) => prev.filter((meme) => meme.s3Url !== imageUrl));
       }
     } catch (error) {
       console.error("Error deleting meme:", error);
@@ -69,13 +70,13 @@ const RecentMemes = ({ refreshTrigger }) => {
               >
                 <div className="position-relative card card-img shadow-sm">
                   <a
-                    href={meme.imageUrl}
+                    href={meme.s3Url}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     <div className="image-wrapper">
                       <img
-                        src={meme.imageUrl}
+                        src={meme.s3Url}
                         alt="Recent Meme"
                         className="card-img-top"
                       />
@@ -85,7 +86,7 @@ const RecentMemes = ({ refreshTrigger }) => {
                   {hoveredIndex === index && (
                     <button
                       className="delete-button"
-                      onClick={() => handleDeleteMeme(meme.imageUrl)}
+                      onClick={() => handleDeleteMeme(meme.s3Url)}
                     >
                       <i className="bi bi-trash"></i>
                     </button>

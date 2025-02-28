@@ -4,6 +4,7 @@ const { deleteVector, storeMemeDescription, searchMemes } = require("./services/
 const { uploadMiddleware, listAllMemes, deleteFromS3 } = require("./services/s3Helper");
 const { getMemeDescriptionFromOpenAI } = require("./services/memeProcessor");
 const { verifyAuth } = require("./services/authService");
+const {addMemeOwnershipRecord, deleteMemeOwnershipRecord, getUserOwnedMemes} = require("./services/dynamoService");
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -53,6 +54,15 @@ app.get("/api/protected-route", (req, res) => {
  * ************* Upload Image
  */
 app.post("/api/upload", uploadMiddleware.single("meme"), async (req, res) => {
+  const { userEmail } = req.body;
+
+  if (!userEmail) {
+    return res.status(400).json({ error: "Missing user email" }); // Ensure email is provided
+  }
+
+  console.log(`Uploading meme for: ${userEmail}`);
+
+  
   if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
   const imageUrl = req.file.location;
@@ -62,7 +72,9 @@ app.post("/api/upload", uploadMiddleware.single("meme"), async (req, res) => {
 
   console.log(">>> Description: ", description);
 
-  await storeMemeDescription(imageUrl, description);
+  await storeMemeDescription(imageUrl, description, userEmail);
+
+  await addMemeOwnershipRecord(userEmail, imageUrl);
 
   res.json({ imageUrl, description });
 });
@@ -71,10 +83,16 @@ app.post("/api/upload", uploadMiddleware.single("meme"), async (req, res) => {
  * ************* Search
  */
 app.get("/api/search", async (req, res) => {
+  const { userEmail } = req.query;
+
+  if (!userEmail) {
+    return res.status(400).json({ error: "Missing user email" }); // Ensure email is provided
+  }
+
   const { query } = req.query;
   if (!query) return res.status(400).json({ error: "Query is required" });
 
-  const results = await searchMemes(query);
+  const results = await searchMemes(query, userEmail);
   res.json(results);
 });
 
@@ -83,7 +101,13 @@ app.get("/api/search", async (req, res) => {
  */
 app.get("/api/all-memes", async (req, res) => {
   try {
-    const memeUrls = await listAllMemes();
+    const { userEmail } = req.query;
+
+    if (!userEmail) {
+      return res.status(400).json({ error: "Missing user email" }); // Ensure email is provided
+    }
+
+    const memeUrls = await getUserOwnedMemes(userEmail);
     memeUrls.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)); // Sort newest first
     res.json(memeUrls);
   } catch (error) {
@@ -96,8 +120,15 @@ app.get("/api/all-memes", async (req, res) => {
  * ************* Get Recent memes (last 10)
  */
 app.get("/api/recent-memes", async (req, res) => {
+  // console.log(">>> Hit recent memes");
   try {
-    const memeUrls = await listAllMemes();
+    const { userEmail } = req.query;
+
+    if (!userEmail) {
+      return res.status(400).json({ error: "Missing user email" }); // Ensure email is provided
+    }
+
+    const memeUrls = await getUserOwnedMemes(userEmail);
     res.json(memeUrls.slice(-10)); // Return last 10
   } catch (error) {
     console.error("Error fetching recent memes:", error);
@@ -109,12 +140,19 @@ app.get("/api/recent-memes", async (req, res) => {
  * ************* Delete Image
  */
 app.delete("/api/delete-image", async (req, res) => {
+  const { userEmail } = req.body;
+
+  if (!userEmail) {
+    return res.status(400).json({ error: "Missing user email" }); // Ensure email is provided
+  }  
+
   const { imageUrl } = req.body;
   if (!imageUrl) return res.status(400).json({ error: "Image URL is required" });
 
   try {
     await deleteFromS3(imageUrl);
-    await deleteVector(imageUrl);
+    await deleteVector(imageUrl, userEmail);
+    await deleteMemeOwnershipRecord(userEmail, imageUrl);
     res.json({ message: "Image and vector deleted successfully", imageUrl });
   } catch (error) {
     console.error("Error deleting image:", error);

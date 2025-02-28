@@ -15,7 +15,7 @@ const Header = () => {
   }, []);
 
   return (
-    <nav className="navbar navbar-expand-sm navbar-light bg-light shadow-sm p-3">
+    <nav className="navbar navbar-expand-md navbar-light bg-light shadow-sm p-3">
       <div className="container-fluid">
         {/* App Title as Link */}
         <Link to="/" className="navbar-brand text-dark fw-bold">

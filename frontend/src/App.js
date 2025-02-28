@@ -40,8 +40,8 @@ function App() {
         <main className="flex-grow-1 container-fluid px-4 mt-4">
           {user ? (
             <Routes>
-              <Route path="/" element={<MemeDashboard />} />
-              <Route path="/all-memes" element={<AllMemes />} />
+              <Route path="/" element={<MemeDashboard user={user}/> } />
+              <Route path="/all-memes" element={<AllMemes user={user} />} />
               <Route path="/about" element={<About />} /> 
             </Routes>
           ) : (

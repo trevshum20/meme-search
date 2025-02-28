@@ -3,10 +3,11 @@ import { useRef, useState } from "react";
 import { getFirebaseToken } from "../firebase";
 import "./UploadForm";
 
-const UploadForm = ({ onUploadSuccess }) => {
+const UploadForm = ({ onUploadSuccess, user }) => {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const BACKEND_BASE_URL = process.env.REACT_APP_BACKEND_BASE_URL;
 
   // Reference for hidden file input
   const fileInputRef = useRef(null);
@@ -28,10 +29,11 @@ const UploadForm = ({ onUploadSuccess }) => {
     setUploading(true);
     const formData = new FormData();
     formData.append("meme", file);
+    formData.append("userEmail", user.email);
 
     try {
       const token = await getFirebaseToken();
-      await axios.post("http://localhost:5001/api/upload", formData, {
+      await axios.post(`${BACKEND_BASE_URL}/api/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}`},
       });
 

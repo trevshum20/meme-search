@@ -5,7 +5,7 @@ import "./DeleteButton.css";
 import "./MemeGrid.css";
 import "./SearchMemes.css";
 
-const SearchMemes = ({ onMemeDeleted }) => {
+const SearchMemes = ({ onMemeDeleted, user }) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [numResultsToShow, setNumResultsToShow] = useState(5); // Default to showing 5 results
@@ -23,11 +23,12 @@ const SearchMemes = ({ onMemeDeleted }) => {
     try {
       const token = await getFirebaseToken();
       const response = await axios.get(
-        `${BACKEND_BASE_URL}/api/search?query=${encodeURIComponent(query)}`,
+        `${BACKEND_BASE_URL}/api/search?query=${encodeURIComponent(query)}&userEmail=${encodeURIComponent(user.email)}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      console.log(`>>> Response: `, response.data);
       setResults(response.data);
     } catch (err) {
       console.error("Search failed:", err);
@@ -44,7 +45,7 @@ const SearchMemes = ({ onMemeDeleted }) => {
         `${BACKEND_BASE_URL}/api/delete-image`,
         {
           headers: { Authorization: `Bearer ${token}` },
-          data: { imageUrl },
+          data: { imageUrl, userEmail: user.email },
         }
       );
 
