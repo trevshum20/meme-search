@@ -1,11 +1,11 @@
 import axios from "axios";
 import { useRef, useState } from "react";
 import { getFirebaseToken } from "../firebase";
-import "./UploadForm";
+import ImagePreview from "./ImagePreview";
+import "./UploadForm.css";
 
 const UploadForm = ({ onUploadSuccess, user }) => {
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const BACKEND_BASE_URL = process.env.REACT_APP_BACKEND_BASE_URL;
 
@@ -13,33 +13,65 @@ const UploadForm = ({ onUploadSuccess, user }) => {
   const fileInputRef = useRef(null);
 
   const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      setPreview(URL.createObjectURL(selectedFile));
+    const files = event.target.files;
+    if (!files.length) return;
+
+    if (files.length > 10) {
+      alert("You can only upload up to 10 images at a time.");
+      event.target.value = ""; // Reset input
+      return;
     }
+
+    const fileArray = Array.from(files);
+    const previews = fileArray.map((file) => ({
+      file,
+      previewUrl: URL.createObjectURL(file),
+      context: { popCulture: "", characters: "", notes: "" }, // Initial empty context
+    }));
+
+    setSelectedFiles(previews);
   };
 
+  const updateFileContext = (index, newContext) => {
+    setSelectedFiles((prevFiles) =>
+      prevFiles.map((file, i) => (i === index ? { ...file, context: newContext } : file))
+    );
+  };
+
+  const removeFile = (index) => {
+    setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  };
+  
+
   const handleUpload = async () => {
-    if (!file) {
-      alert("Please select an image first.");
+    if (!selectedFiles.length) {
+      alert("Please select images first.");
       return;
     }
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append("meme", file);
-    formData.append("userEmail", user.email);
 
     try {
       const token = await getFirebaseToken();
-      await axios.post(`${BACKEND_BASE_URL}/api/upload`, formData, {
-        headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}`},
+      const formData = new FormData();
+
+      // Append all files under the same key "memes"
+      selectedFiles.forEach(({ file }) => {
+        formData.append("memes", file); // Ensure "memes" matches backend array key
       });
 
-      alert("Upload successful!");
-      setFile(null);
-      setPreview(null);
+      formData.append("userEmail", user.email);
+      formData.append("context", JSON.stringify(selectedFiles.map(f => f.context)));
+
+      await axios.post(`${BACKEND_BASE_URL}/api/upload`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      alert("All uploads successful!");
+      setSelectedFiles([]);
       fileInputRef.current.value = ""; // Reset file input
 
       // Notify RecentMemes to refetch
@@ -58,36 +90,46 @@ const UploadForm = ({ onUploadSuccess, user }) => {
 
   return (
     <div className="card shadow-sm p-4 text-center upload-container">
-      <h2 className="mb-3"><b>Upload a Meme</b></h2>
+      <h2 className="mb-3">
+        <b>Upload Memes</b>
+      </h2>
 
       <div className="mb-3">
-        <label className="form-label">Select an Image</label>
+        <label className="form-label">Select Images</label>
         <div className="custom-file-wrapper">
           <input
             type="file"
             ref={fileInputRef}
             className="hidden-file-input"
+            multiple
             accept="image/*"
             onChange={handleFileChange}
           />
-          <button className="btn btn-secondary custom-file-button" onClick={handleCustomButtonClick} style={{fontSize: "18px", fontWeight: "bolder"}} >
-            Choose File
+          <button
+            className="btn btn-secondary custom-file-button"
+            onClick={handleCustomButtonClick}
+            style={{ fontSize: "18px", fontWeight: "bolder" }}
+          >
+            Choose Files
           </button>
-          {file && <span className="file-name">{file.name}</span>}
         </div>
       </div>
 
-      {preview && (
-        <div className="mb-3">
-          <img src={preview} alt="Preview" className="img-fluid rounded shadow-sm" style={{ maxHeight: "150px", maxHeight: "200px" }} />
-        </div>
-      )}
+      {/* Image Previews with Context Inputs */}
+      <div className="image-preview-container">
+        {selectedFiles.map((file, index) => (
+          <ImagePreview key={index} file={file} index={index} updateContext={updateFileContext} removeFile={removeFile}/>
+        ))}
+      </div>
 
-      <button className="btn upload-button" onClick={handleUpload} disabled={uploading} style={{fontSize: "18px", fontWeight: "bolder"}} >
+      <button
+        className="btn upload-button"
+        onClick={handleUpload}
+        disabled={uploading}
+        style={{ fontSize: "18px", fontWeight: "bolder" }}
+      >
         {uploading ? "Uploading..." : "Upload"}
       </button>
-      {/* Space below the heading */}
-      <div style={{ height: "2px" }}></div>
     </div>
   );
 };

@@ -1,22 +1,38 @@
 const express = require("express");
 const cors = require("cors");
-const { deleteVector, storeMemeDescription, searchMemes } = require("./services/vectorStore");
-const { uploadMiddleware, listAllMemes, deleteFromS3 } = require("./services/s3Helper");
+const {
+  deleteVector,
+  storeMemeDescription,
+  searchMemes,
+} = require("./services/vectorStore");
+const {
+  uploadMiddleware,
+  listAllMemes,
+  deleteFromS3,
+} = require("./services/s3Helper");
 const { getMemeDescriptionFromOpenAI } = require("./services/memeProcessor");
 const { verifyAuth } = require("./services/authService");
-const {addMemeOwnershipRecord, deleteMemeOwnershipRecord, getUserOwnedMemes} = require("./services/dynamoService");
+const {
+  addMemeOwnershipRecord,
+  deleteMemeOwnershipRecord,
+  getUserOwnedMemes,
+} = require("./services/dynamoService");
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Enable CORS
-app.use(cors({
-  origin: "http://localhost:3000",
-  methods: "GET,POST,DELETE",
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    methods: "GET,POST,DELETE",
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
 app.use(express.json());
+app.disable("x-powered-by"); // Hide Express version
+
 
 /**
  *******************************************************************************
@@ -30,13 +46,13 @@ app.use(express.json());
 
 // Home
 app.get("/", (req, res) => {
-    res.send("Hello, World!");
-  });
-  
+  res.send("Hello, World!");
+});
+
 // Health
-  app.get("/health", (req, res) => {
-      res.status(200).json({ status: "ok" });
-  });
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 /**
  * ********************** Protected Behind Firebase Auth  **********************
@@ -47,14 +63,14 @@ app.use("/api", verifyAuth);
 
 // Test authentication route
 app.get("/api/protected-route", (req, res) => {
-    res.json({ message: `Hello, ${req.user.email}! You are authenticated.` });
+  res.json({ message: `Hello, ${req.user.email}! You are authenticated.` });
 });
 
 /**
- * ************* Upload Image
+ * ************* Upload Images
  */
-app.post("/api/upload", uploadMiddleware.single("meme"), async (req, res) => {
-  const { userEmail } = req.body;
+app.post("/api/upload", uploadMiddleware.array("memes", 10), async (req, res) => {
+  const { userEmail, context } = req.body;
 
   if (!userEmail) {
     return res.status(400).json({ error: "Missing user email" }); // Ensure email is provided
@@ -62,21 +78,48 @@ app.post("/api/upload", uploadMiddleware.single("meme"), async (req, res) => {
 
   console.log(`Uploading meme for: ${userEmail}`);
 
-  
-  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ error: "No file uploaded" });
+  }
 
-  const imageUrl = req.file.location;
-  const description = await getMemeDescriptionFromOpenAI(imageUrl);
+  const contextArray = JSON.parse(context || "[]");
 
-  if (!description) return res.status(500).json({ error: "Failed to get meme description from OpenAI" });
+  try {
+    const uploadPromises = req.files.map(async (file, index) => {
+      const imageUrl = file.location;
+      let fileContext = contextArray[index] || {};
 
-  console.log(">>> Description: ", description);
+      // Truncate user context to a max length of 30 characters per field
+      fileContext = {
+        popCulture: fileContext.popCulture ? fileContext.popCulture.substring(0, 30) : "",
+        characters: fileContext.characters ? fileContext.characters.substring(0, 30) : "",
+        notes: fileContext.notes ? fileContext.notes.substring(0, 30) : ""
+      };
 
-  await storeMemeDescription(imageUrl, description, userEmail);
+      const description = await getMemeDescriptionFromOpenAI(
+        imageUrl,
+        fileContext
+      );
+      if (!description) {
+        throw new Error("Failed to get meme description from OpenAI");
+      }
 
-  await addMemeOwnershipRecord(userEmail, imageUrl);
+      console.log(">>> Description: ", description);
+      await storeMemeDescription(imageUrl, description, userEmail);
+      await addMemeOwnershipRecord(userEmail, imageUrl);
 
-  res.json({ imageUrl, description });
+      return { imageUrl, description };
+    });
+
+    const uploadResults = await Promise.all(uploadPromises);
+    res.json({
+      message: "All files uploaded successfully.",
+      results: uploadResults,
+    });
+  } catch (error) {
+    console.error("Upload error:", error);
+    res.status(500).json({ error: "File upload failed." });
+  }
 });
 
 /**
@@ -144,10 +187,11 @@ app.delete("/api/delete-image", async (req, res) => {
 
   if (!userEmail) {
     return res.status(400).json({ error: "Missing user email" }); // Ensure email is provided
-  }  
+  }
 
   const { imageUrl } = req.body;
-  if (!imageUrl) return res.status(400).json({ error: "Image URL is required" });
+  if (!imageUrl)
+    return res.status(400).json({ error: "Image URL is required" });
 
   try {
     await deleteFromS3(imageUrl);
