@@ -20,11 +20,12 @@ const {
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+const allowedOrigin = process.env.ALLOWED_ORIGIN || "http://localhost:3000";
 
 // Enable CORS
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: allowedOrigin,
     methods: "GET,POST,DELETE",
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
