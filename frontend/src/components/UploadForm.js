@@ -63,12 +63,15 @@ const UploadForm = ({ onUploadSuccess, user }) => {
       formData.append("userEmail", user.email);
       formData.append("context", JSON.stringify(selectedFiles.map(f => f.context)));
 
-      await axios.post(`${BACKEND_BASE_URL}/api/upload`, formData, {
+      let response = await axios.post(`${BACKEND_BASE_URL}/api/upload`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
       });
+      if (response.status === 429) {
+        alert("⚠️ You have exceeded the rate limit. Please wait a few minutes before trying again.");
+      }
 
       alert("All uploads successful!");
       setSelectedFiles([]);

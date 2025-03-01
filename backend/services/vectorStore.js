@@ -28,8 +28,6 @@ async function storeMemeDescription(imageUrl, description, userEmail) {
         metadata: { description, imageUrl, userEmail },
       },
     ]);
-
-    console.log(`Stored in Pinecone: ${imageUrl}`);
   } catch (error) {
     console.error("Error storing meme in Pinecone:", error);
   }

@@ -1,7 +1,7 @@
 const admin = require("firebase-admin");
 const fs = require("fs");
 const path = require("path");
-require("dotenv").config(); // Load env variables
+require("dotenv").config(); // Load environment variables
 
 // Resolve absolute path dynamically
 const serviceAccountPath = path.join(__dirname, "../config/firebase-adminsdk.json");
@@ -19,9 +19,13 @@ admin.initializeApp({
 });
 
 // Convert the comma-separated env variable into a Set
-const WHITELISTED_EMAILS = new Set(
-    (process.env.WHITELISTED_EMAILS || "").split(",").map(email => email.trim())
-);
+const rawEmails = process.env.WHITELISTED_EMAILS || "";
+const WHITELISTED_EMAILS = new Set(rawEmails.split(",").map(email => email.trim().toLowerCase()));
+
+// Debugging: Warn if the whitelist is empty
+if (!rawEmails.trim()) {
+    console.warn("⚠️ Warning: No whitelisted emails found. The app will deny all users!");
+}
 
 /**
  * Middleware to verify Firebase ID tokens and enforce email whitelisting.
@@ -30,23 +34,37 @@ async function verifyAuth(req, res, next) {
     const idToken = req.headers.authorization?.split("Bearer ")[1];
 
     if (!idToken) {
-        return res.status(401).json({ error: "Unauthorized: No token provided" });
+        return res.status(401).json({ error: "Unauthorized: No authentication token provided." });
     }
 
     try {
         const decodedToken = await admin.auth().verifyIdToken(idToken);
-        const userEmail = decodedToken.email;
+        const userEmail = decodedToken.email.toLowerCase(); // Normalize email case
 
         if (!WHITELISTED_EMAILS.has(userEmail)) {
-            return res.status(403).json({ error: "Forbidden: Access denied" });
+            return res.status(403).json({
+                error: "Forbidden: Your Google account is not authorized. Contact the app owner to request access."
+            });
         }
 
         req.user = decodedToken; // Attach user data to request
-        next(); // Allow request to continue
+        next();
     } catch (error) {
         console.error("Auth Error:", error);
-        res.status(401).json({ error: "Unauthorized: Invalid token" });
+        res.status(401).json({
+            error: "Unauthorized: Invalid or expired token. Please log in again."
+        });
     }
 }
 
-module.exports = { verifyAuth };
+async function verifyToken(idToken) {
+    try {
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        return decodedToken;
+    } catch (error) {
+        console.error("🚨 Token verification failed:", error);
+        throw new Error("Unauthorized: Invalid or expired token");
+    }
+}
+
+module.exports = { verifyAuth, verifyToken };

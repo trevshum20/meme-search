@@ -28,7 +28,9 @@ const SearchMemes = ({ onMemeDeleted, user }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log(`>>> Response: `, response.data);
+      if (response.status === 429) {
+        alert("⚠️ You have exceeded the rate limit. Please wait a few minutes before trying again.");
+      }
       setResults(response.data);
     } catch (err) {
       console.error("Search failed:", err);
@@ -48,6 +50,9 @@ const SearchMemes = ({ onMemeDeleted, user }) => {
           data: { imageUrl, userEmail: user.email },
         }
       );
+      if (response.status === 429) {
+        alert("⚠️ You have exceeded the rate limit. Please wait a few minutes before trying again.");
+      }
 
       if (response.status === 200) {
         setResults((prev) => prev.filter((meme) => meme.imageUrl !== imageUrl));

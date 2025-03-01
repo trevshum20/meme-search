@@ -32,11 +32,11 @@ const logout = async () => {
   }
 };
 
-const getFirebaseToken = async () => {
+const getFirebaseToken = async (forceRefresh = false) => {
   const auth = getAuth();
   const user = auth.currentUser;
   if (user) {
-    return await user.getIdToken();
+    return await user.getIdToken(forceRefresh);
   }
   return null;
 };

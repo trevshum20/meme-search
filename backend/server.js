@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const rateLimit = require("express-rate-limit"); // ✅ Import express-rate-limit
 const {
   deleteVector,
   storeMemeDescription,
@@ -11,7 +12,7 @@ const {
   deleteFromS3,
 } = require("./services/s3Helper");
 const { getMemeDescriptionFromOpenAI } = require("./services/memeProcessor");
-const { verifyAuth } = require("./services/authService");
+const { verifyAuth, verifyToken } = require("./services/authService");
 const {
   addMemeOwnershipRecord,
   deleteMemeOwnershipRecord,
@@ -23,18 +24,26 @@ const PORT = process.env.PORT || 5001;
 const allowedOrigin = process.env.ALLOWED_ORIGIN || "http://localhost:3000";
 const NUMBER_OF_RECENT_MEMES = 12;
 
-// Enable CORS
+// ✅ API Rate Limiter: Limit each IP to 100 requests per 15 minutes
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Max requests per IP per window
+  message: { error: "Too many requests, please try again later." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// ✅ Enable CORS
 app.use(
   cors({
     origin: allowedOrigin,
     methods: "GET,POST,DELETE",
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "Access-Control-Allow-Origin"],
     credentials: true,
   })
 );
 app.use(express.json());
 app.disable("x-powered-by"); // Hide Express version
-
 
 /**
  *******************************************************************************
@@ -60,8 +69,32 @@ app.get("/health", (req, res) => {
  * ********************** Protected Behind Firebase Auth  **********************
  */
 
+// ✅ Apply rate limiting to all API routes
+app.use("/api", apiLimiter);
+app.use("/auth/check", apiLimiter);
+
 // Protect all API routes with Firebase authentication
 app.use("/api", verifyAuth);
+
+app.post("/auth/check", async (req, res) => {
+  const token = req.headers.authorization?.split("Bearer ")[1];
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized: No authentication token provided." });
+  }
+
+  try {
+    const decodedToken = await verifyToken(token); // ✅ Call authService.verifyToken()
+    const userEmail = decodedToken.email.toLowerCase();
+
+    const isWhitelisted = process.env.WHITELISTED_EMAILS.split(",")
+      .map(email => email.trim().toLowerCase())
+      .includes(userEmail);
+
+    return res.json({ isWhitelisted });
+  } catch (error) {
+    return res.status(401).json({ error: error.message });
+  }
+});
 
 // Test authentication route
 app.get("/api/protected-route", (req, res) => {
@@ -103,7 +136,7 @@ app.post("/api/upload", uploadMiddleware.array("memes", 10), async (req, res) =>
       if (!description) {
         throw new Error("Failed to get meme description from OpenAI");
       }
-      
+
       await storeMemeDescription(imageUrl, description, userEmail);
       await addMemeOwnershipRecord(userEmail, imageUrl);
 

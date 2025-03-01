@@ -75,7 +75,6 @@ async function deleteFromS3(imageUrl) {
             Key: objectKey,
         });
         await s3.send(command);
-        console.log(`Deleted from S3: ${imageUrl}`);
     } catch (error) {
         console.error(`Error deleting from S3: ${imageUrl}`, error);
         throw new Error("Failed to delete image.");

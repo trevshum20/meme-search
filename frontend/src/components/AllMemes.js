@@ -21,6 +21,9 @@ const AllMemes = ({ user }) => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+        if (response.status === 429) {
+          alert("⚠️ You have exceeded the rate limit. Please wait a few minutes before trying again.");
+        }
         setMemes(response.data);
       } catch (error) {
         console.error("Error fetching all memes:", error);
@@ -35,6 +38,10 @@ const AllMemes = ({ user }) => {
       const response = await axios.delete(`${BACKEND_BASE_URL}/api/delete-image`, {
         data: { imageUrl, userEmail: user.email },
       });
+
+      if (response.status === 429) {
+        alert("⚠️ You have exceeded the rate limit. Please wait a few minutes before trying again.");
+      }
 
       if (response.status === 200) {
         setMemes((prev) => prev.filter((meme) => meme.s3Url !== imageUrl));

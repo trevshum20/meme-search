@@ -27,7 +27,6 @@ const addMemeOwnershipRecord = async (userEmail, s3Url) => {
     });
 
     await dynamoDB.send(params);
-    console.log(`Added meme for ${userEmail}`);
 };
 
 /**
@@ -40,7 +39,6 @@ const deleteMemeOwnershipRecord = async (userEmail, s3Url) => {
     });
 
     await dynamoDB.send(params);
-    console.log(`Deleted meme for ${userEmail}`);
 };
 
 /**

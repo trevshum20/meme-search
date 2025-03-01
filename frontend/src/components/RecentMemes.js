@@ -21,7 +21,9 @@ const RecentMemes = ({ refreshTrigger, user }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log(`>>> Images: `, response.data);
+      if (response.status === 429) {
+        alert("⚠️ You have exceeded the rate limit. Please wait a few minutes before trying again.");
+      }
       setMemes(response.data.reverse());
     } catch (error) {
       console.error("Error fetching recent memes:", error);
@@ -42,6 +44,9 @@ const RecentMemes = ({ refreshTrigger, user }) => {
           data: { imageUrl, userEmail: user.email },
         }
       );
+      if (response.status === 429) {
+        alert("⚠️ You have exceeded the rate limit. Please wait a few minutes before trying again.");
+      }
 
       if (response.status === 200) {
         setMemes((prev) => prev.filter((meme) => meme.s3Url !== imageUrl));
