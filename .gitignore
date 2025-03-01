@@ -49,3 +49,8 @@ frontend/yarn-debug.log*
 frontend/yarn-error.log*
 
 /backend/config/firebase-adminsdk.json
+
+# Ignore React Build Files
+backend/client/build
+frontend/build
+

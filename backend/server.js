@@ -20,7 +20,7 @@ const {
 } = require("./services/dynamoService");
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+
 const allowedOrigin = process.env.ALLOWED_ORIGIN || "http://localhost:3000";
 const NUMBER_OF_RECENT_MEMES = 12;
 
