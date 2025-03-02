@@ -76,6 +76,7 @@ const SearchMemes = ({ onMemeDeleted, user }) => {
       <h2 className="text-center mb-3">
         <b>Find Memes</b>
       </h2>
+      <div style={{ height: "10px" }}></div>
 
       {/* Search Input */}
       <div className="input-group mb-3">
@@ -167,7 +168,7 @@ const SearchMemes = ({ onMemeDeleted, user }) => {
                 </p>
               )}
         </div>
-        <div style={{ height: "21px" }}></div>
+        <div style={{ height: "27px" }}></div>
         {/* "Done" Button: Clears Search */}
         {results.length > 0 && (
           <div className="text-center mt-3">
