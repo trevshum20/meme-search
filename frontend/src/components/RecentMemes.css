@@ -1,6 +1,6 @@
 .recent-memes-section {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     gap: 1.5rem;
     justify-content: center;
     border: 1px solid rgba(0, 0, 0, 0.125);
@@ -13,7 +13,7 @@
   
   .recent-memes-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Dynamic columns */
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Dynamic columns */
     gap: 1rem;
     justify-content: center;
     padding-bottom: 1rem;
@@ -32,3 +32,15 @@
     }
   }
   
+  @media (max-width: 445px) { /* Small screens */
+    .meme-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .recent-memes-grid {
+      gap: .5rem
+    }
+
+    .recent-memes-section {
+      gap: .5rem
+    }
+  }

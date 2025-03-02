@@ -14,7 +14,6 @@ const SearchMemes = ({ onMemeDeleted, user }) => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const BACKEND_BASE_URL = process.env.REACT_APP_BACKEND_BASE_URL;
 
-
   const handleSearch = async () => {
     if (!query.trim()) return;
     setLoading(true);
@@ -23,13 +22,17 @@ const SearchMemes = ({ onMemeDeleted, user }) => {
     try {
       const token = await getFirebaseToken();
       const response = await axios.get(
-        `${BACKEND_BASE_URL}/api/search?query=${encodeURIComponent(query)}&userEmail=${encodeURIComponent(user.email)}`,
+        `${BACKEND_BASE_URL}/api/search?query=${encodeURIComponent(
+          query
+        )}&userEmail=${encodeURIComponent(user.email)}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
       if (response.status === 429) {
-        alert("⚠️ You have exceeded the rate limit. Please wait a few minutes before trying again.");
+        alert(
+          "⚠️ You have exceeded the rate limit. Please wait a few minutes before trying again."
+        );
       }
       setResults(response.data);
     } catch (err) {
@@ -51,7 +54,9 @@ const SearchMemes = ({ onMemeDeleted, user }) => {
         }
       );
       if (response.status === 429) {
-        alert("⚠️ You have exceeded the rate limit. Please wait a few minutes before trying again.");
+        alert(
+          "⚠️ You have exceeded the rate limit. Please wait a few minutes before trying again."
+        );
       }
 
       if (response.status === 200) {
@@ -116,7 +121,7 @@ const SearchMemes = ({ onMemeDeleted, user }) => {
         <div className="meme-grid-search">
           {displayedResults.length > 0
             ? displayedResults.map((meme, index) => (
-                <div 
+                <div
                   key={index}
                   className="meme-card meme-card-search"
                   onMouseEnter={() => setHoveredIndex(index)}
@@ -149,7 +154,17 @@ const SearchMemes = ({ onMemeDeleted, user }) => {
                 </div>
               ))
             : !loading && (
-                <p className="text-center text-muted">No memes found.</p>
+                <p
+                  className="text-center text-muted"
+                  style={{
+                    gridColumn: "1 / -1", // Makes the <p> span across all columns
+                    justifySelf: "center", // Centers horizontally in the grid
+                    alignSelf: "center", // Centers vertically if needed
+                    width: "100%", // Ensures it stretches across available space
+                  }}
+                >
+                  No memes found.
+                </p>
               )}
         </div>
         <div style={{ height: "21px" }}></div>
