@@ -22,6 +22,7 @@ const upload = multer({
       cb(null, `memes/${Date.now()}-${file.originalname}`);
     },
   }),
+  limits: { fileSize: 10 * 1024 * 1024 }, // Set limit to 20MB
 });
 
 /**

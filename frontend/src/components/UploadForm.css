@@ -1,55 +1,88 @@
 .upload-container {
-    margin: auto;
-    background: #fff;
-    border-radius: .25rem;
-  }
-  
-  /* Hide the actual file input */
-  .hidden-file-input {
-    display: none;
-  }
-  
-  /* Custom button to replace file input */
-  .custom-file-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-  }
-  
-  .custom-file-button {
-    background-color: #6c757d;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    font-size: 14px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.2s ease-in-out;
-  }
-  
-  .custom-file-button:hover {
-    background-color: #5a6268;
-  }
-  
-  .upload-button {
-    background-color: #007bff !important;
-    border: none;
-    padding: 12px;
-    font-size: 16px;
-    font-weight: bold;
-    color: white;
-    border-radius: 5px;
-    transition: background 0.2s ease-in-out;
-  }
-  
-  .upload-button:hover {
-    background-color: #0056b3 !important;
-    color: white;
-  }
-  
-  .upload-button:disabled {
-    background-color: #6c757d !important;
-    cursor: not-allowed;
-  }
-  
+  margin: auto;
+  background: #fff;
+  border-radius: 0.25rem;
+}
+
+/* Hide the actual file input */
+.hidden-file-input {
+  display: none;
+}
+
+/* Custom button to replace file input */
+.custom-file-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.custom-file-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.custom-file-button:hover {
+  background-color: #5a6268;
+}
+
+.upload-button {
+  background-color: #007bff !important;
+  border: none;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  border-radius: 5px;
+  transition: background 0.2s ease-in-out;
+}
+
+.upload-button:hover {
+  background-color: #0056b3 !important;
+  color: white;
+}
+
+.upload-button:disabled {
+  background-color: #6c757d !important;
+  cursor: not-allowed;
+}
+
+/* Tooltip CSS */
+.tooltip-box {
+  position: absolute;
+  background: #fff;
+  color: #333;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  font-size: 14px;
+  max-width: 320px;
+  top: 100%; /* Places tooltip BELOW the upload form */
+  right: 0; /* Aligns tooltip to the right */
+  margin-top: 10px; /* Adds spacing between the form and tooltip */
+  z-index: 10;
+  text-align: left;
+}
+
+.tooltip-box ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.tooltip-box li {
+  text-align: left;
+  margin-bottom: 6px;
+}
+
+.tooltip-box p {
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 8px;
+}

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { auth, logout } from "../firebase";
 
-const Header = () => {
+const Header = ({ hasTikTokAccess }) => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ const Header = () => {
       <div className="container-fluid">
         {/* App Title as Link */}
         <Link to="/" className="navbar-brand text-dark fw-bold">
-          <h3><b>Smart Meme Index</b></h3>
+          <h3><b>TikTok And Meme AI Search</b></h3>
         </Link>
 
         {/* Navbar Toggler (Hamburger) */}
@@ -48,6 +48,14 @@ const Header = () => {
                 All Memes
               </Link>
             </li>
+            {/* ✅ Conditionally show TikTok Search if user has access */}
+            {hasTikTokAccess && (
+              <li className="nav-item">
+                <Link to="/tiktok-search" className="nav-link text-primary">
+                  TikTok Search
+                </Link>
+              </li>
+            )}
             <li className="nav-item">
               <Link to="/about" className="nav-link text-primary">
                 About
