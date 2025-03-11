@@ -19,7 +19,7 @@ const Header = ({ hasTikTokAccess }) => {
       <div className="container-fluid">
         {/* App Title as Link */}
         <Link to="/" className="navbar-brand text-dark fw-bold">
-          <h3><b>TikTok And Meme AI Search</b></h3>
+          <h3><b>TikTok AI Search</b></h3>
         </Link>
 
         {/* Navbar Toggler (Hamburger) */}
