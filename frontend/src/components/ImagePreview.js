@@ -30,7 +30,7 @@ const ImagePreview = ({ file, index, updateContext, removeFile }) => {
       {/* Button and Form Container */}
       <div className="context-container">
         <button className="btn btn-primary add-context-button" onClick={() => setShowForm((prev) => !prev)}>
-          {showForm ? "Cancel" : "Add Context"}
+          <b>{showForm ? "Cancel" : "Add Context"}</b>
         </button>
 
         {showForm && (

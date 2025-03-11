@@ -5,6 +5,7 @@ const {
   deleteVector,
   storeMemeDescription,
   searchMemes,
+  searchTikTokIndex,
 } = require("./services/vectorStore");
 const {
   uploadMiddleware,
@@ -42,8 +43,10 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
-app.disable("x-powered-by"); // Hide Express version
+app.use(express.json({ limit: '10mb' }));
+app.disable("x-powered-by");
+
+const WHITELISTED_EMAILS_TIKTOK = process.env.WHITELISTED_EMAILS_TIKTOK ? process.env.WHITELISTED_EMAILS_TIKTOK.split(",") : [];
 
 /**
  *******************************************************************************
@@ -66,7 +69,9 @@ app.get("/health", (req, res) => {
 });
 
 /**
- * ********************** Protected Behind Firebase Auth  **********************
+ * **************************************************************************************************************************
+ * ************************************ Protected Behind Firebase Auth  *****************************************************
+ * **************************************************************************************************************************
  */
 
 // ✅ Apply rate limiting to all API routes
@@ -76,6 +81,7 @@ app.use("/auth/check", apiLimiter);
 // Protect all API routes with Firebase authentication
 app.use("/api", verifyAuth);
 
+// Authcheck + email whitelist check
 app.post("/auth/check", async (req, res) => {
   const token = req.headers.authorization?.split("Bearer ")[1];
   if (!token) {
@@ -101,21 +107,56 @@ app.get("/api/protected-route", (req, res) => {
   res.json({ message: `Hello, ${req.user.email}! You are authenticated.` });
 });
 
+// Check tiktok whitelist
+app.post("/api/auth/tiktok-access", async (req, res) => {
+  const token = req.headers.authorization?.split("Bearer ")[1];
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized: No authentication token provided." });
+  }
+
+  try {
+    const decodedToken = await verifyToken(token);
+    const userEmail = decodedToken.email.toLowerCase();
+
+    const hasAccess = WHITELISTED_EMAILS_TIKTOK.includes(userEmail);
+    return res.json({ tiktokAccess: hasAccess });
+  } catch (error) {
+    return res.status(401).json({ error: error.message });
+  }
+});
+
+
 /**
  * ************* Upload Images
  */
-app.post("/api/upload", uploadMiddleware.array("memes", 10), async (req, res) => {
+app.post("/api/upload", (req, res, next) => {
+  uploadMiddleware.array("memes", 10)(req, res, (err) => {
+    if (err) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return res.status(413).json({ error: "File size exceeds 10MB limit. Please upload a smaller image." });
+      }
+      console.error("Multer error:", err);
+      return res.status(500).json({ error: "File upload failed due to server error." });
+    }
+    next();
+  });
+}, async (req, res) => {
   const { userEmail, context } = req.body;
 
   if (!userEmail) {
-    return res.status(400).json({ error: "Missing user email" }); // Ensure email is provided
+    return res.status(400).json({ error: "Missing user email" });
   }
 
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ error: "No file uploaded" });
   }
 
-  const contextArray = JSON.parse(context || "[]");
+  let contextArray = [];
+  try {
+    contextArray = JSON.parse(context || "[]");
+  } catch (error) {
+    return res.status(400).json({ error: "Invalid context format. Must be valid JSON." });
+  }
 
   try {
     const uploadPromises = req.files.map(async (file, index) => {
@@ -129,10 +170,7 @@ app.post("/api/upload", uploadMiddleware.array("memes", 10), async (req, res) =>
         notes: fileContext.notes ? fileContext.notes.substring(0, 30) : ""
       };
 
-      const description = await getMemeDescriptionFromOpenAI(
-        imageUrl,
-        fileContext
-      );
+      const description = await getMemeDescriptionFromOpenAI(imageUrl, fileContext);
       if (!description) {
         throw new Error("Failed to get meme description from OpenAI");
       }
@@ -150,13 +188,14 @@ app.post("/api/upload", uploadMiddleware.array("memes", 10), async (req, res) =>
     });
   } catch (error) {
     console.error("Upload error:", error);
-    res.status(500).json({ error: "File upload failed." });
+    res.status(500).json({ error: "File upload failed. Please try again later." });
   }
 });
 
 /**
  * ************* Search
  */
+// image search
 app.get("/api/search", async (req, res) => {
   const { userEmail } = req.query;
 
@@ -169,6 +208,34 @@ app.get("/api/search", async (req, res) => {
 
   const results = await searchMemes(query, userEmail);
   res.json(results);
+});
+
+// tiktok search
+app.get("/api/search/tiktok", async (req, res) => {
+  const { userEmail, query, topK } = req.query;
+  
+  if (!userEmail) {
+    return res.status(400).json({ error: "Missing user email" });
+  }
+  if (!WHITELISTED_EMAILS_TIKTOK.includes(userEmail)) {
+    return res.status(403).json({ error: "Access denied. User not whitelisted for TikTok search." });
+  }
+  if (!query) {
+    return res.status(400).json({ error: "Query is required" });
+  }
+
+  const parsedTopK = topK ? parseInt(topK, 10) : 10; // Default topK to 10
+  if (isNaN(parsedTopK) || parsedTopK < 2 || parsedTopK > 20) {
+    return res.status(400).json({ error: "topK must be between 2 and 20" });
+  }
+
+  try {
+    const results = await searchTikTokIndex(query, userEmail, parsedTopK);
+    res.json(results);
+  } catch (error) {
+    console.error("Error searching TikTok index:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 /**

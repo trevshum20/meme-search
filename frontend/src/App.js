@@ -8,11 +8,13 @@ import Footer from "./components/Footer";
 import Header from "./components/Header";
 import Login from "./components/Login";
 import MemeDashboard from "./components/MemeDashboard";
+import TikTokSearch from "./components/TikTokSearch";
 import { auth, getFirebaseToken } from "./firebase";
 
 function App() {
   const [user, setUser] = useState(null);
   const [isWhitelisted, setIsWhitelisted] = useState(null);
+  const [hasTikTokAccess, setHasTikTokAccess] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorType, setErrorType] = useState(null); // Track error type
   const BACKEND_BASE_URL = process.env.REACT_APP_BACKEND_BASE_URL;
@@ -32,6 +34,14 @@ function App() {
 
           setIsWhitelisted(response.data.isWhitelisted);
           setErrorType(null); // Reset error if successful
+
+          // ✅ Check TikTok search access
+          const tiktokResponse = await axios.post(
+            `${BACKEND_BASE_URL}/api/auth/tiktok-access`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setHasTikTokAccess(tiktokResponse.data.tiktokAccess);
         } catch (error) {
           console.log("ERROR!");
           if (error.response) {
@@ -48,9 +58,11 @@ function App() {
 
           console.error("🚨 Error checking whitelist:", error);
           setIsWhitelisted(false);
+          setHasTikTokAccess(false);
         }
       } else {
         setIsWhitelisted(false);
+        setHasTikTokAccess(false);
       }
       setLoading(false);
     });
@@ -59,7 +71,7 @@ function App() {
   }, []);
 
   // 🚀 Fix: Show loading until auth + whitelist status is confirmed
-  if (loading || isWhitelisted === null) {
+  if (loading || isWhitelisted === null || hasTikTokAccess === null) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
         <div className="spinner-border text-primary" role="status">
@@ -72,7 +84,7 @@ function App() {
   return (
     <Router>
       <div className="d-flex flex-column min-vh-100">
-        <Header isWhitelisted={isWhitelisted} />
+        <Header isWhitelisted={isWhitelisted} hasTikTokAccess={hasTikTokAccess} />
         <main className="flex-grow-1 container-fluid px-4 mt-4">
           {user ? (
             <Routes>
@@ -84,6 +96,7 @@ function App() {
                 <>
                   <Route path="/" element={<MemeDashboard user={user} />} />
                   <Route path="/all-memes" element={<AllMemes user={user} isWhitelisted={isWhitelisted} />} />
+                  {hasTikTokAccess && <Route path="/tiktok-search" element={<TikTokSearch user={user} />} />}
                 </>
               ) : (
                 // 🚨 Show different messages based on error type

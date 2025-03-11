@@ -60,4 +60,23 @@ async function generateEmbedding(text) {
     }
 }
 
-module.exports = { getMemeDescriptionFromOpenAI, generateEmbedding };
+/**
+ * Turn a query parameter into a vector using open AI's text-embedding-3-small model, use for tiktok search
+ * @param {*} text 
+ * @returns 
+ */
+async function generateEmbeddingTikTok(text) {
+  try {
+      const embeddingResponse = await openai.embeddings.create({
+          model: "text-embedding-3-small",
+          input: text,
+      });
+
+      return embeddingResponse.data[0].embedding;
+  } catch (error) {
+      console.error("Error generating TikTok embedding:", error);
+      throw new Error("Failed to generate TikTok embedding.");
+  }
+}
+
+module.exports = { getMemeDescriptionFromOpenAI, generateEmbedding, generateEmbeddingTikTok };

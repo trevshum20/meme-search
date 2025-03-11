@@ -3,59 +3,83 @@ import React from "react";
 const About = () => {
   return (
     <div className="mt-5 container-fluid">
-      <div className="row align-items-center" >
+      <div className="row align-items-center">
         {/* Image Section */}
         <div className="col-md-6 text-center">
           <img
-            src="https://trevorshumway.com/images/meme.jpeg"
-            alt="Meme Searching"
-            className="img-fluid rounded shadow-lg"
+            src="https://trevorshumway.com/images/tiktok_saved.jpeg"
+            alt="TikTok and Meme Searching"
+            className="img-fluid rounded shadow-lg w-50"
           />
         </div>
 
         {/* About Content */}
         <div className="col-md-6">
-          <h1 className="fw-bold text-primary">About Smart Meme Index</h1>
+          <h1 className="fw-bold text-primary">
+            Find Your Saved TikToks & Memes Instantly
+          </h1>
           <p className="lead">
-            Memes have been a core part of internet culture for years.
-            However, finding a specific meme can be surprisingly difficult. Whether it's buried
-            in your camera roll, lost in a group chat, or impossible to find through traditional
-            search engines, meme remembering and retrieval can be frustrating.
+            Ever wanted to rewatch a "Saved" TikTok or show that hidden gem to a
+            friend, and then struggled to find it again? Many TikTok users have hundreds or thousands of
+            saved TikToks, and scrolling through your Saved
+            collection to find the right one can be frustrating, especially if
+            you saved it a long time ago. <b>Now, you can instantly search your
+            saved TikToks using AI-powered natural language search.</b>
           </p>
 
-          <p>
-            I built this app to make meme searching fast, easy, and AI-powered. This is a
-            full-stack web app built with Node.js and React, deployed on AWS Elastic Beanstalk.
-            It leverages cutting-edge AI to allow natural language meme search using OpenAI and Pinecone.
+          <p> 
+            TikTok already has a solid search feature, likely powered by AI, but
+            it searches across the entire platform. <b>What makes this tool
+            unique is that it focuses exclusively on your Saved videos</b>—the
+            ones you’ve already curated and want to find again. By leveraging a
+            <b> vectorized database and AI-powered search parameters</b>, this tool
+            provides a deeper, more intuitive way to recall your Saved
+            TikToks. Instead of relying on exact text matches, it understands
+            meaning and context, making it far better at surfacing the videos
+            you're looking for.
           </p>
 
           <h4 className="fw-bold text-secondary mt-4">How It Works:</h4>
-          <ul className="list-group list-group-flush" >
+          <ul className="list-group list-group-flush">
             <li className="list-group-item">
-              📂 Meme Upload - Upload your memes, and they are stored securely in AWS S3.
+              🎥 <b>Search Your Saved TikToks</b> - AI summarizes your saved
+              TikToks so you can find them instantly.
             </li>
             <li className="list-group-item">
-              📝 AI Meme Analysis - OpenAI analyzes and generates a concise summary of the meme.
+              📝 <b>AI-Powered Summaries</b> - The app extracts captions, authors,
+              keywords, and transcriptions.
             </li>
             <li className="list-group-item">
-              🧠 Vectorized Database - The AI-generated summary is stored in Pinecone (Vector Database).
+              🧠 <b>Vectorized Search</b> - AI converts TikTok descriptions and
+              meme captions into searchable data.
             </li>
             <li className="list-group-item">
-              🔍 Natural Language Search - When searching for a meme, OpenAI converts your 
-              query into a vector representation.
+              🔍 <b>Instant Retrieval</b> - Enter any description or keyword, and
+              the app finds the TikTok or meme you're looking for.
             </li>
             <li className="list-group-item">
-              ⚡ AI-Powered Retrieval - The app finds and returns most relevant memes based on similarity.
+              ⚡ <b>Google SSO Login & Private Search</b> - Your searches are
+              private and only accessible to you.
             </li>
           </ul>
 
           <p className="mt-3">
-            This app reinvents meme searching by leveraging artificial intelligence and vector search technology 
-            to help you quickly find memes using simple descriptions. Whether you remember a funny caption, 
-            a vague description, or a meme's theme, this app will find it for you!
+            This app reinvents how you <b>find your saved TikToks and memes</b>. No
+            more endless scrolling—just search naturally, and the AI does the
+            work for you!
           </p>
 
-          <p className="text-muted">Enjoy finding your favorite memes effortlessly! 🚀</p>
+
+          <p>
+            Similarly, this app also solves a similar problem of <b>meme searching</b> on your camera role, 
+            which has the same problem—there's not a powerful way to search them with AI! Sure, you can search for specific
+            keywords or objects, but most memes cannot be found in such a simple way. AI and vectorized search allows you
+            to go deeper and use the power of AI to find memes that are abstractly related to your text based search. 
+          </p>
+
+          <p className="text-muted">
+            Enjoy finding your favorite TikToks and memes effortlessly! 🚀
+          </p>
         </div>
       </div>
     </div>
