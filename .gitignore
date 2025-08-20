@@ -57,3 +57,5 @@ frontend/build
 var/
 var/*
 backend/scripts/*
+
+docker-compose.yml

@@ -23,12 +23,8 @@ const { v4: uuid } = require('uuid');
 const { Readable } = require('stream');
 const fs = require('fs');
 
-
 const app = express();
-
-const allowedOrigin = process.env.ALLOWED_ORIGIN || "http://localhost:3000";
 const NUMBER_OF_RECENT_MEMES = 12;
-
 const IMAGES_ROOT = path.resolve(process.env.IMAGES_ROOT || path.join(process.cwd(), 'var/images'));
 
 // Static fallback for clean URLs (/images/2025/08/uuid.png)
@@ -50,15 +46,21 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// ✅ Enable CORS
-app.use(
-  cors({
-    origin: allowedOrigin,
-    methods: "GET,POST,DELETE",
-    allowedHeaders: ["Content-Type", "Authorization", "Access-Control-Allow-Origin"],
-    credentials: true,
-  })
-);
+// CORS
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+
+const corsOptions = {
+  origin: function (origin, cb) {
+    // Allow same-origin (no Origin header) and any in the allowlist
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error('CORS not allowed for origin: ' + origin));
+  },
+  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'], // request headers
+  credentials: true,
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.disable("x-powered-by");
 
