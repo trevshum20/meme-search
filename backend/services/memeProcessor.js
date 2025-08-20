@@ -1,42 +1,45 @@
 const { OpenAI } = require("openai");
+require('dotenv').config();
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const MODEL_NAME = "gpt-4o-mini";
 
 /**
- * Sends an image URL to GPT-4o and gets a description.
+ * Describe a meme from raw bytes (preferred) or a URL.
+ * If you pass {buffer, mimeType}, we'll send a data URL. Otherwise we fall back to imageUrl.
  */
-async function getMemeDescriptionFromOpenAI(imageUrl, context = {}) {
+async function getMemeDescriptionFromOpenAI({ buffer, mimeType, imageUrl, context = {} }) {
   try {
-    let userMessage = [
-      { type: "text", text: "Please analyze the following meme and describe its content." },
-      { type: "image_url", image_url: { url: imageUrl } }
-    ];
-    
-    if (context.popCulture || context.characters || context.notes) {
-      userMessage.unshift({
-        type: "text", 
-        text: `Additional context: Pop Culture References - ${context.popCulture || "None"}, Characters - ${context.characters || "None"}, Other Notes - ${context.notes || "None"}`
-      });
+    const parts = [];
+
+    // Optional context first
+    const ctx = `Additional context: Pop Culture - ${context.popCulture || "None"}, Characters - ${context.characters || "None"}, Notes - ${context.notes || "None"}`;
+    parts.push({ type: "text", text: ctx });
+
+    // Core instruction
+    parts.push({ type: "text", text: "Please analyze the following meme and describe its content including any raw text in the image." });
+
+    // Image payload — prefer bytes
+    if (buffer && mimeType) {
+      parts.push({ type: "image_url", image_url: { url: bufferToDataUrl(buffer, mimeType) } });
+    } else if (imageUrl) {
+      parts.push({ type: "image_url", image_url: { url: imageUrl } });
+    } else {
+      throw new Error("No image provided (need {buffer,mimeType} or imageUrl).");
     }
-    
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+
+    const resp = await openai.chat.completions.create({
+      model: MODEL_NAME,
       messages: [
-        {
-          role: "system",
-          content: "You are an AI that describes memes concisely, including any raw text in the image. Consider user-provided context when relevant."
-        },
-        {
-          role: "user",
-          content: userMessage
-        }
+        { role: "system", content: "You are an AI that describes memes concisely, including any raw text in the image. Consider user-provided context when relevant." },
+        { role: "user", content: parts },
       ],
       max_tokens: 300,
     });
 
-    return response.choices[0].message.content;
-  } catch (error) {
-    console.error("Error fetching meme description:", error);
+    return resp.choices?.[0]?.message?.content ?? null;
+  } catch (err) {
+    console.error("Error fetching meme description:", err);
     return null;
   }
 }
@@ -77,6 +80,11 @@ async function generateEmbeddingTikTok(text) {
       console.error("Error generating TikTok embedding:", error);
       throw new Error("Failed to generate TikTok embedding.");
   }
+}
+
+function bufferToDataUrl(buf, mime) {
+  const b64 = Buffer.isBuffer(buf) ? buf.toString("base64") : Buffer.from(buf).toString("base64");
+  return `data:${mime};base64,${b64}`;
 }
 
 module.exports = { getMemeDescriptionFromOpenAI, generateEmbedding, generateEmbeddingTikTok };

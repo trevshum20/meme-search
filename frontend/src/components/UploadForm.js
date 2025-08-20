@@ -46,6 +46,16 @@ const UploadForm = ({ onUploadSuccess, user }) => {
     setSelectedFiles(previews);
   };
 
+  const updateFileContext = (index, newContext) => {
+    setSelectedFiles((prevFiles) =>
+      prevFiles.map((file, i) => (i === index ? { ...file, context: newContext } : file))
+    );
+  };
+
+  const removeFile = (index) => {
+    setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  };
+
   const handleUpload = async () => {
     if (!selectedFiles.length) {
       setErrorMessage("⚠️ Please select images first.");
@@ -150,7 +160,7 @@ const UploadForm = ({ onUploadSuccess, user }) => {
       {/* Image Previews with Context Inputs */}
       <div className="image-preview-container">
         {selectedFiles.map((file, index) => (
-          <ImagePreview key={index} file={file} index={index} />
+          <ImagePreview key={index} file={file} index={index} updateContext={updateFileContext} removeFile={removeFile}/>
         ))}
       </div>
 
@@ -184,10 +194,6 @@ const UploadForm = ({ onUploadSuccess, user }) => {
               📌 Max <b>10 files</b> at a time
             </li>
             <li>📌 All files must be under <b>10MB</b></li>
-            <li>
-              ⚠️ Please do not upload private/personal images. The S3 storage is
-              public for now.
-            </li>
             <li>
               🤖 OpenAI is bad at identifying "who is in your meme" and "what your meme is from".
               📝 If that info is important to your meme being funny, add that context manually via the{" "}

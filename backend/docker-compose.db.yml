@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:15
+    container_name: memeapp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: meme
+      POSTGRES_PASSWORD: meme
+      POSTGRES_DB: memeapp
+    ports:
+      - "55432:5432"      # host:container — avoids clashing with anything on 5432
+    volumes:
+      - memeapp_pgdata:/var/lib/postgresql/data
+volumes:
+  memeapp_pgdata:
