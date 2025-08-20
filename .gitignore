@@ -54,3 +54,6 @@ frontend/yarn-error.log*
 backend/client/build
 frontend/build
 
+var/
+var/*
+backend/scripts/*

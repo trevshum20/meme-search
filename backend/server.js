@@ -7,23 +7,39 @@ const {
   searchMemes,
   searchTikTokIndex,
 } = require("./services/vectorStore");
-const {
-  uploadMiddleware,
-  listAllMemes,
-  deleteFromS3,
-} = require("./services/s3Helper");
 const { getMemeDescriptionFromOpenAI } = require("./services/memeProcessor");
 const { verifyAuth, verifyToken } = require("./services/authService");
 const {
   addMemeOwnershipRecord,
   deleteMemeOwnershipRecord,
-  getUserOwnedMemes,
-} = require("./services/dynamoService");
+  getUserOwnedMemes
+} = require("./services/postgresService");
+const path = require('path');
+const {
+  LocalImageStore,
+  uploadMiddleware
+} = require("./storage/localImageStore")
+const { v4: uuid } = require('uuid');
+const { Readable } = require('stream');
+const fs = require('fs');
+
 
 const app = express();
 
 const allowedOrigin = process.env.ALLOWED_ORIGIN || "http://localhost:3000";
 const NUMBER_OF_RECENT_MEMES = 12;
+
+const IMAGES_ROOT = path.resolve(process.env.IMAGES_ROOT || path.join(process.cwd(), 'var/images'));
+
+// Static fallback for clean URLs (/images/2025/08/uuid.png)
+app.use('/images', express.static(IMAGES_ROOT, {
+  fallthrough: false,
+  etag: true,
+  maxAge: '1y',
+  immutable: true,
+}));
+
+const store = new LocalImageStore();
 
 // ✅ API Rate Limiter: Limit each IP to 100 requests per 15 minutes
 const apiLimiter = rateLimit({
@@ -125,72 +141,88 @@ app.post("/api/auth/tiktok-access", async (req, res) => {
   }
 });
 
-
 /**
  * ************* Upload Images
  */
-app.post("/api/upload", (req, res, next) => {
-  uploadMiddleware.array("memes", 10)(req, res, (err) => {
-    if (err) {
-      if (err.code === "LIMIT_FILE_SIZE") {
-        return res.status(413).json({ error: "File size exceeds 10MB limit. Please upload a smaller image." });
+app.post(
+  '/api/upload',
+  (req, res, next) => {
+    uploadMiddleware.array('memes', 10)(req, res, (err) => {
+      if (err) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(413).json({ error: 'File size exceeds 10MB limit. Please upload a smaller image.' });
+        }
+        console.error('Multer error:', err);
+        return res.status(500).json({ error: 'File upload failed due to server error.' });
       }
-      console.error("Multer error:", err);
-      return res.status(500).json({ error: "File upload failed due to server error." });
+      next();
+    });
+  },
+  async (req, res) => {
+    const { userEmail, context } = req.body;
+
+    if (!userEmail) {
+      return res.status(400).json({ error: 'Missing user email' });
     }
-    next();
-  });
-}, async (req, res) => {
-  const { userEmail, context } = req.body;
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
 
-  if (!userEmail) {
-    return res.status(400).json({ error: "Missing user email" });
-  }
+    let contextArray = [];
+    try {
+      contextArray = JSON.parse(context || '[]');
+    } catch {
+      return res.status(400).json({ error: 'Invalid context format. Must be valid JSON.' });
+    }
 
-  if (!req.files || req.files.length === 0) {
-    return res.status(400).json({ error: "No file uploaded" });
-  }
+    try {
+      const results = [];
+      for (let i = 0; i < req.files.length; i++) {
+        const file = req.files[i];
+        const ext = store.pickExt(file);
+        const key = `${new Date().getFullYear()}/${(new Date().getMonth()+1)
+          .toString()
+          .padStart(2,'0')}/${uuid()}${ext}`;
 
-  let contextArray = [];
-  try {
-    contextArray = JSON.parse(context || "[]");
-  } catch (error) {
-    return res.status(400).json({ error: "Invalid context format. Must be valid JSON." });
-  }
+        // Turn buffer into a readable stream and save to disk
+        const stream = Readable.from(file.buffer);
+        const saved = await store.save(stream, key);
+        const imageUrl = store.url(saved.key); // e.g. http://localhost:3000/images/YYYY/MM/uuid.jpg
 
-  try {
-    const uploadPromises = req.files.map(async (file, index) => {
-      const imageUrl = file.location;
-      let fileContext = contextArray[index] || {};
+        // Per-file context (truncate to 30 chars like before)
+        let fileContext = contextArray[i] || {};
+        fileContext = {
+          popCulture: fileContext.popCulture ? fileContext.popCulture.substring(0, 30) : '',
+          characters: fileContext.characters ? fileContext.characters.substring(0, 30) : '',
+          notes: fileContext.notes ? fileContext.notes.substring(0, 30) : '',
+        };
 
-      // Truncate user context to a max length of 30 characters per field
-      fileContext = {
-        popCulture: fileContext.popCulture ? fileContext.popCulture.substring(0, 30) : "",
-        characters: fileContext.characters ? fileContext.characters.substring(0, 30) : "",
-        notes: fileContext.notes ? fileContext.notes.substring(0, 30) : ""
-      };
+        // Describe meme and store metadata just like before
+        // inside your /api/upload loop, after saving to disk and building imageUrl
+        const description = await getMemeDescriptionFromOpenAI({
+          buffer: file.buffer,              // raw bytes from multer
+          mimeType: file.mimetype,          // e.g., "image/jpeg"
+          // imageUrl,                      // optional fallback if you later host public URLs
+          context: fileContext
+        });
+        if (!description) throw new Error('Failed to get meme description from OpenAI');
 
-      const description = await getMemeDescriptionFromOpenAI(imageUrl, fileContext);
-      if (!description) {
-        throw new Error("Failed to get meme description from OpenAI");
+        await storeMemeDescription(imageUrl, description, userEmail);
+        await addMemeOwnershipRecord(userEmail, imageUrl);
+
+        results.push({ imageUrl, description });
       }
 
-      await storeMemeDescription(imageUrl, description, userEmail);
-      await addMemeOwnershipRecord(userEmail, imageUrl);
-
-      return { imageUrl, description };
-    });
-
-    const uploadResults = await Promise.all(uploadPromises);
-    res.json({
-      message: "All files uploaded successfully.",
-      results: uploadResults,
-    });
-  } catch (error) {
-    console.error("Upload error:", error);
-    res.status(500).json({ error: "File upload failed. Please try again later." });
+      return res.json({
+        message: 'All files uploaded successfully.',
+        results,
+      });
+    } catch (err) {
+      console.error('Upload error:', err);
+      return res.status(500).json({ error: 'File upload failed. Please try again later.' });
+    }
   }
-});
+);
 
 /**
  * ************* Search
@@ -292,7 +324,7 @@ app.delete("/api/delete-image", async (req, res) => {
     return res.status(400).json({ error: "Image URL is required" });
 
   try {
-    await deleteFromS3(imageUrl);
+    await store.delete(imageUrl);
     await deleteVector(imageUrl, userEmail);
     await deleteMemeOwnershipRecord(userEmail, imageUrl);
     res.json({ message: "Image and vector deleted successfully", imageUrl });
