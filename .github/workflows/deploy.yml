@@ -2,17 +2,21 @@ name: Deploy to Pi
 
 on:
   push:
-    branches: [ "main" ]   # change if your main branch has a different name
+    branches: [ "main" ]
 
 jobs:
   deploy:
-    runs-on: self-hosted   # will match your Pi runner
+    runs-on: self-hosted   # matches my Pi runner
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Pull and rebuild containers
+      - name: Deploy using local compose on the Pi
         run: |
+          echo "Runner: $(hostname) as $(whoami)"
+          cd /srv/meme-search
+          pwd
+          ls -la
           docker compose pull
           docker compose up -d --build
 
