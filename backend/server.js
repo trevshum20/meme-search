@@ -304,7 +304,7 @@ app.get("/api/recent-memes", async (req, res) => {
     }
 
     const memeUrls = await getUserOwnedMemes(userEmail);
-    res.json(memeUrls.slice(-NUMBER_OF_RECENT_MEMES));
+    res.json(memeUrls.slice(NUMBER_OF_RECENT_MEMES));
   } catch (error) {
     console.error("Error fetching recent memes:", error);
     res.status(500).json({ error: "Failed to fetch recent memes" });
