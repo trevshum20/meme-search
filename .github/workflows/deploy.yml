@@ -1,0 +1,20 @@
+name: Deploy to Pi
+
+on:
+  push:
+    branches: [ "main" ]   # change if your main branch has a different name
+
+jobs:
+  deploy:
+    runs-on: self-hosted   # will match your Pi runner
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Pull and rebuild containers
+        run: |
+          docker compose pull
+          docker compose up -d --build
+
+      - name: Cleanup old images
+        run: docker image prune -f
