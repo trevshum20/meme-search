@@ -2,21 +2,37 @@ name: Deploy to Pi
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ]    # auto-deploy on pushes to main
+  workflow_dispatch:         # manual trigger from Actions tab
+    inputs:
+      ref:
+        description: "Git ref to deploy (branch, tag, or commit SHA)"
+        required: false
+        default: "main"
+        type: string
 
 jobs:
   deploy:
-    runs-on: self-hosted   # matches my Pi runner
+    runs-on: self-hosted   # matches your Pi runner
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy using local compose on the Pi
+      - name: Pull latest code to Pi
         run: |
           echo "Runner: $(hostname) as $(whoami)"
           cd /srv/meme-search
           pwd
           ls -la
+
+          # Use workflow_dispatch input if provided, otherwise default to main
+          S_REF="${{ github.event.inputs.ref }}"
+          if [ -z "$S_REF" ]; then S_REF="main"; fi
+
+          git fetch --all --tags
+          TARGET="$(git rev-parse --verify --quiet origin/$S_REF || echo "$S_REF")"
+          git reset --hard "$TARGET"
+
+      - name: Deploy using local compose on the Pi
+        run: |
+          cd /srv/meme-search
           docker compose pull
           docker compose up -d --build
 
