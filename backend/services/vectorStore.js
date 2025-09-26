@@ -146,6 +146,7 @@ async function storeTikTokVector(vector, tiktokUrl, userEmail, meta = {}) {
         // Keep metadata keys consistent with your search mapper
         metadata: {
           original_url: tiktokUrl,
+          userContext: meta.userContext || '',
           userEmail,
           author: meta.author || '',
           ogDescription: meta.ogDescription || '',

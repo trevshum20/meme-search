@@ -22,3 +22,13 @@
 .addtiktok-toast {
   margin: 0;
 }
+
+.addtiktok-toggle {
+  width: 150px;
+}
+
+@media (max-width: 575.98px) {
+  .addtiktok-container form .btn {
+    margin-top: 0.5rem; /* ~8px */
+  }
+}

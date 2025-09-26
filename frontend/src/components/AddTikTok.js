@@ -2,6 +2,8 @@ import axios from "axios";
 import { useEffect, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { getFirebaseToken } from "../firebase";
+import { useNavigate } from "react-router-dom";
+
 import "./AddTikTok.css";
 
 const AddTikTok = ({user}) => {
@@ -13,6 +15,9 @@ const AddTikTok = ({user}) => {
   const [toast, setToast] = useState({ show: false, kind: "success", msg: "" });
   const location = useLocation();
   const autoSubmittedRef = useRef(false);
+  const [showContextForm, setShowContextForm] = useState(false);
+  const [context, setContext] = useState({ popCulture: "", characters: "", notes: "" });
+  const navigate = useNavigate();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -40,12 +45,18 @@ const AddTikTok = ({user}) => {
         const token = await getFirebaseToken();
         const resp = await axios.post(
         `${BACKEND_BASE_URL}/api/ingest`,
-        { url: urlToSend },
+        {
+          url: urlToSend,
+          userEmail: user?.email,
+          context,
+        },
         { headers: { Authorization: `Bearer ${token}` } }
         );
 
         setResult(resp.data);
         setUrl("");
+        setContext({ popCulture: "", characters: "", notes: "" });
+        setShowContextForm(false);
         setToast({
         show: true,
         kind: "success",
@@ -62,17 +73,23 @@ const AddTikTok = ({user}) => {
     } finally {
         setIsLoading(false);
     }
-    };
+  };
+
+  const handleContextChange = (e) => {
+    const { name, value } = e.target;
+    setContext((prev) => ({ ...prev, [name]: value }));
+  };
 
   return (
     <main className="container my-4 addtiktok-container">
       <div className="row justify-content-center">
-        <div className="col-12 col-lg-8">
+        <div className="col-12 col-lg-12">
           <h1 className="h3 mb-2">Add TikTok</h1>
           <p className="text-muted mb-4">Paste a TikTok URL and submit to ingest.</p>
 
-          <form className="row g-2 align-items-center" onSubmit={onSubmit}>
-            <div className="col-12 col-md">
+          {/* URL + Submit + Add Context (button sits to the right of Submit) */}
+          <form className="row g-1 align-items-center" onSubmit={onSubmit}>
+            <div className="col-12 col-sm">
               <input
                 type="url"
                 required
@@ -82,19 +99,74 @@ const AddTikTok = ({user}) => {
                 onChange={(e) => setUrl(e.target.value)}
               />
             </div>
-            <div className="col-12 col-md-auto">
-              <button type="submit" className="btn btn-primary w-100" disabled={isLoading}>
+
+            <div className="col-12 col-sm-auto">
+              <button type="submit" className="btn btn-primary addtiktok-submit" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
-                    Adding…
+                    Submitting…
                   </>
                 ) : (
-                  "Add"
+                  "Submit"
                 )}
               </button>
             </div>
+
+            <div className="col-12 col-sm-auto">
+              <button
+                type="button"
+                className="btn btn-outline-secondary addtiktok-toggle"
+                onClick={() => setShowContextForm((s) => !s)}
+                disabled={isLoading}
+              >
+                {showContextForm ? "Hide Context" : "+ Add Context"}
+              </button>
+            </div>
           </form>
+
+          <div className="mt-3">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => navigate("/tiktok-search")}
+            >
+              {result ? "Done" : "Cancel"}
+            </button>
+          </div>
+
+          {/* Stacked, wide context inputs */}
+          {showContextForm && (
+            <div className="addtiktok-context mt-3">
+              <input
+                type="text"
+                className="form-control mb-2"
+                name="popCulture"
+                placeholder="Pop Culture References"
+                maxLength={100}
+                value={context.popCulture}
+                onChange={handleContextChange}
+              />
+              <input
+                type="text"
+                className="form-control mb-2"
+                name="characters"
+                placeholder="Characters"
+                maxLength={100}
+                value={context.characters}
+                onChange={handleContextChange}
+              />
+              <input
+                type="text"
+                className="form-control"
+                name="notes"
+                placeholder="Other Notes"
+                maxLength={200}
+                value={context.notes}
+                onChange={handleContextChange}
+              />
+            </div>
+          )}
 
           {error && (
             <div className="alert alert-danger mt-3" role="alert">

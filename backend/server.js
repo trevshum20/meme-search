@@ -345,16 +345,33 @@ app.delete("/api/delete-image", async (req, res) => {
  */
 app.post('/api/ingest', async (req, res) => {
   // TODO: protect against prompt injection for user inputs that get sent to the AI
+  const safe = (v) => (typeof v === "string" ? v.trim().slice(0, 200) : "");
   try {
-    const userEmail = req.user?.email || 'trevshum20@gmail.com';
+    let {url, context, userEmail } = req.body || {};
+    if (!userEmail) {
+      userEmail = 'trevshum20@gmail.com';
+    }
 
-    const { url } = req.body || {};
     if (!url || typeof url !== 'string') {
       return res.status(400).json({ error: 'url is required' });
     }
 
     // 1) Fetch page metadata (wait ~5s for client JS to settle)
     const meta = await extractHeadMetadata(url, { waitMs: 5000 });
+
+    let userContextString = "";
+
+    if (context?.popCulture) {
+      userContextString += `Pop Culture References: ${safe(context.popCulture)}. `;
+    }
+    if (context?.characters) {
+      userContextString += `Characters: ${safe(context.characters)}. `;
+    }
+    if (context?.notes) {
+      userContextString += `Other Notes: ${safe(context.notes)}.`;
+    }
+
+    meta["userContext"] = userContextString;
 
     // 2) Concatenate text fields for embedding
     const pieces = [
@@ -364,6 +381,11 @@ app.post('/api/ingest', async (req, res) => {
       meta.keywords,
       meta.author
     ].filter(Boolean);
+
+    if (meta.context) {
+      pieces.unshift(meta.userContext);
+    }
+
     const textForEmbedding = pieces.join('\n\n');
 
     if (!textForEmbedding) {
@@ -383,10 +405,13 @@ app.post('/api/ingest', async (req, res) => {
       userEmail,
       vectorLength: Array.isArray(vector) ? vector.length : undefined,
       meta: {
+        original_url: tiktokUrl,
+        userContext: meta.userContext || '',
+        userEmail,
         author: meta.author,
         ogDescription: meta.ogDescription,
         keywords: meta.keywords,
-        pageUrl: meta.pageUrl || url
+        date: new Date().toISOString(),
       }
     });
   } catch (err) {
