@@ -1,6 +1,6 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { getFirebaseToken } from "../firebase";
 import "./AddTikTok.css";
 
@@ -11,10 +11,26 @@ const AddTikTok = ({user}) => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState({ show: false, kind: "success", msg: "" });
+  const location = useLocation();
+  const autoSubmittedRef = useRef(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const prefill = params.get("url");
+    const auto = params.get("auto") === "1";
+    if (prefill && !url) {
+      setUrl(prefill);
+      if (auto && !autoSubmittedRef.current) {
+        autoSubmittedRef.current = true;
+        setTimeout(() => onSubmit({ urlOverride: prefill }), 0);
+      }
+    }
+  }, [location.search]);
 
 
-    const onSubmit = async (e) => {
-    e.preventDefault();
+    const onSubmit = async (eOrOptions) => {
+    if (eOrOptions?.preventDefault) eOrOptions.preventDefault();
+    const urlToSend = eOrOptions?.urlOverride || url;
     setError("");
     setResult(null);
     setIsLoading(true);
@@ -24,7 +40,7 @@ const AddTikTok = ({user}) => {
         const token = await getFirebaseToken();
         const resp = await axios.post(
         `${BACKEND_BASE_URL}/api/ingest`,
-        { url },
+        { url: urlToSend },
         { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -90,7 +106,7 @@ const AddTikTok = ({user}) => {
             <div className="card bg-dark text-light mt-3">
               <div className="card-body">
                 <pre className="mb-0 overflow-auto addtiktok-pre">
-{JSON.stringify(result, null, 2)}
+                  {JSON.stringify(result, null, 2)}
                 </pre>
               </div>
             </div>
