@@ -4,27 +4,56 @@ import "./TikTokSearch.css";
 const TikTokVideo = ({ video }) => {
   const embedRef = useRef(null);
 
+  // Prefer uiFriendlyUrl, else originalUrl (new), else original_url (defensive)
+  const url =
+    video?.uiFriendlyUrl ||
+    video?.originalUrl ||
+    video?.original_url ||
+    "";
+
+  // Try to grab the numeric id after /video/
+  const videoId = (() => {
+    const m = url.match(/\/video\/(\d+)/);
+    return m ? m[1] : "";
+  })();
+
+  const caption = video?.caption || video?.ogDescription || "View on TikTok";
+
   useEffect(() => {
-    if (window.tiktokEmbed) {
-      window.tiktokEmbed.load(); // Reload TikTok embed when component mounts
+    // If TikTok embed script already loaded, ask it to (re)hydrate this block
+    if (window.tiktokEmbed?.load) {
+      window.tiktokEmbed.load();
     }
-  }, []);
+  }, [url]);
+
+  if (!url) {
+    // nothing to render if we didn't get a usable URL
+    return null;
+  }
 
   return (
     <div className="tiktok-card">
       <blockquote
         className="tiktok-embed"
-        cite={video.uiFriendlyUrl}
-        data-video-id={video.uiFriendlyUrl.split("/video/")[1]}
+        cite={url}
+        data-video-id={videoId}
         ref={embedRef}
       >
-        <a href={video.uiFriendlyUrl} target="_blank" rel="noopener noreferrer">
-          {video.caption}
+        <a href={url} target="_blank" rel="noopener noreferrer">
+          {caption}
         </a>
       </blockquote>
+
+      {/* Keep the embed script; TikTok recommends including it near the embed */}
       <script async src="https://www.tiktok.com/embed.js"></script>
+
       <div className="video-info">
-        <a href={video.uiFriendlyUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-primary"
+        >
           <b>Watch on TikTok</b>
         </a>
       </div>

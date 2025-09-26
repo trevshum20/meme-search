@@ -14,6 +14,13 @@ const TikTokSearch = ({ user }) => {
 
   const handleSearch = async () => {
     if (!query.trim()) return;
+
+    const numTopK = Number(topK);
+    if (isNaN(numTopK) || numTopK < 2 || numTopK > 20) {
+      setError("Please choose a number between 2 and 20.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -68,6 +75,7 @@ const TikTokSearch = ({ user }) => {
           placeholder="Search TikTok videos..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          disabled={results.length > 0}
         />
         {results.length === 0 && (
           <div className="topk-container">
@@ -79,7 +87,7 @@ const TikTokSearch = ({ user }) => {
               min="2"
               max="20"
               value={topK}
-              onChange={(e) => setTopK(Math.min(20, Math.max(2, Number(e.target.value))))}
+              onChange={(e) => setTopK(e.target.value)}
             />
           </div>
         )}
