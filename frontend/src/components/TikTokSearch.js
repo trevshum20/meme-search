@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import "./TikTokSearch.css"; // Import component-specific CSS
 import TikTokVideo from "./TikTokVideo";
+import { Link } from "react-router-dom";
 
 const TikTokSearch = ({ user }) => {
   const [query, setQuery] = useState("");
@@ -54,6 +55,11 @@ const TikTokSearch = ({ user }) => {
 
   return (
     <div className="container mt-4">
+      <div className="ts-add-link">
+        <Link to="/add" className="btn btn-sm btn-outline-primary">
+          + Add TikTok
+        </Link>
+      </div>
       <h2 className="text-center mb-3 fw-bold"><b>TikTok Search</b></h2>
       <div className="search-container">
         <input

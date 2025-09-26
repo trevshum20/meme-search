@@ -15,6 +15,10 @@ const SCORE_THRESHOLD_TIKTOK = 0.3;
 const NAMESPACE = "meme";
 
 /**
+ * **************************** Meme Index **************************************
+ */
+
+/**
  * Stores a meme description in Pinecone as a vector embedding.
  * @param {string} imageUrl - URL of the meme stored in S3.
  * @param {string} description - Text description of the meme.
@@ -70,6 +74,18 @@ async function searchMemes(query, userEmail) {
   }
 }
 
+async function deleteVector(url, userEmail) {
+  try {
+    await index.namespace(userEmail).deleteOne(url);
+  } catch (error) {
+    console.error(`Error deleting vector for ${url} from Pinecone: `, error);
+  }
+}
+
+/**
+ * **************************** TikTok Index **************************************
+ */
+
 async function searchTikTokIndex(query, userEmail, topK = 10) {
   try {
     const tiktokIndex = pc.index(
@@ -105,12 +121,44 @@ async function searchTikTokIndex(query, userEmail, topK = 10) {
   }
 }
 
-async function deleteVector(url, userEmail) {
+async function storeTikTokVector(vector, tiktokUrl, userEmail, meta = {}) {
   try {
-    await index.namespace(userEmail).deleteOne(url);
+    if (!Array.isArray(vector) || vector.length === 0) {
+      throw new Error("vector must be a non-empty number array");
+    }
+    if (!tiktokUrl || typeof tiktokUrl !== "string") {
+      throw new Error("tiktokUrl is required");
+    }
+    if (!userEmail || typeof userEmail !== "string") {
+      throw new Error("userEmail is required");
+    }
+
+    const tiktokIndex = pc.index(
+      process.env.PINECONE_TIKTOK_INDEX_NAME,
+      process.env.PINECONE_TIKTOK_INDEX_HOST
+    );
+
+    // Upsert into the user's namespace; ID is the TikTok URL
+    await tiktokIndex.namespace(userEmail).upsert([
+      {
+        id: tiktokUrl,
+        values: vector,
+        // Keep metadata keys consistent with your search mapper
+        metadata: {
+          original_url: tiktokUrl,
+          userEmail,
+          author: meta.author || '',
+          ogDescription: meta.ogDescription || '',
+          keywords: meta.keywords || '',
+          date: new Date().toISOString(),
+        },
+      },
+    ]);
   } catch (error) {
-    console.error(`Error deleting vector for ${url} from Pinecone: `, error);
+    console.error("Error storing TikTok vector in Pinecone:", error);
+    throw new Error("Failed to store TikTok vector.");
   }
 }
 
-module.exports = { deleteVector, storeMemeDescription, searchMemes, searchTikTokIndex };
+
+module.exports = { deleteVector, storeMemeDescription, searchMemes, searchTikTokIndex, storeTikTokVector };

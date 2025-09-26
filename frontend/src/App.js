@@ -9,6 +9,7 @@ import Header from "./components/Header";
 import Login from "./components/Login";
 import MemeDashboard from "./components/MemeDashboard";
 import TikTokSearch from "./components/TikTokSearch";
+import AddTikTok from "./components/AddTikTok";
 import { auth, getFirebaseToken } from "./firebase";
 
 function App() {
@@ -97,6 +98,7 @@ function App() {
                   <Route path="/" element={<MemeDashboard user={user} />} />
                   <Route path="/all-memes" element={<AllMemes user={user} isWhitelisted={isWhitelisted} />} />
                   {hasTikTokAccess && <Route path="/tiktok-search" element={<TikTokSearch user={user} />} />}
+                  {hasTikTokAccess && <Route path="/add" element={<AddTikTok user={user}/>} />}
                 </>
               ) : (
                 // 🚨 Show different messages based on error type

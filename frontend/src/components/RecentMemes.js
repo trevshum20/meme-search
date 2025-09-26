@@ -24,7 +24,7 @@ const RecentMemes = ({ refreshTrigger, user }) => {
       if (response.status === 429) {
         alert("⚠️ You have exceeded the rate limit. Please wait a few minutes before trying again.");
       }
-      setMemes(response.data.reverse());
+      setMemes(response.data);
     } catch (error) {
       console.error("Error fetching recent memes:", error);
     }

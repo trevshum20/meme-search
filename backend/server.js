@@ -6,14 +6,18 @@ const {
   storeMemeDescription,
   searchMemes,
   searchTikTokIndex,
+  storeTikTokVector
 } = require("./services/vectorStore");
-const { getMemeDescriptionFromOpenAI } = require("./services/memeProcessor");
+const { getMemeDescriptionFromOpenAI, generateEmbedding } = require("./services/memeProcessor");
 const { verifyAuth, verifyToken } = require("./services/authService");
 const {
   addMemeOwnershipRecord,
   deleteMemeOwnershipRecord,
   getUserOwnedMemes
 } = require("./services/postgresService");
+const {
+  extractHeadMetadata
+} = require("./services/tikTokService")
 const path = require('path');
 const {
   LocalImageStore,
@@ -336,4 +340,58 @@ app.delete("/api/delete-image", async (req, res) => {
   }
 });
 
+/**
+ * ************* Ingest TikTok URL
+ */
+app.post('/api/ingest', async (req, res) => {
+  // TODO: protect against prompt injection for user inputs that get sent to the AI
+  try {
+    const userEmail = req.user?.email || 'trevshum20@gmail.com';
+
+    const { url } = req.body || {};
+    if (!url || typeof url !== 'string') {
+      return res.status(400).json({ error: 'url is required' });
+    }
+
+    // 1) Fetch page metadata (wait ~5s for client JS to settle)
+    const meta = await extractHeadMetadata(url, { waitMs: 5000 });
+
+    // 2) Concatenate text fields for embedding
+    const pieces = [
+      meta.title,
+      meta.description,
+      meta.ogDescription,
+      meta.keywords,
+      meta.author
+    ].filter(Boolean);
+    const textForEmbedding = pieces.join('\n\n');
+
+    if (!textForEmbedding) {
+      return res.status(422).json({ error: 'No content found to embed from the provided URL.' });
+    }
+
+    // 3) Vectorize
+    const vector = await generateEmbedding(textForEmbedding);
+
+    // 4) Store in Pinecone (with metadata from TikTokService)
+    await storeTikTokVector(vector, url, userEmail, meta);
+
+    // 5) Respond
+    return res.status(201).json({
+      ok: true,
+      message: 'TikTok URL processed and stored',
+      userEmail,
+      vectorLength: Array.isArray(vector) ? vector.length : undefined,
+      meta: {
+        author: meta.author,
+        ogDescription: meta.ogDescription,
+        keywords: meta.keywords,
+        pageUrl: meta.pageUrl || url
+      }
+    });
+  } catch (err) {
+    console.error('Error in /ingest:', err);
+    return res.status(500).json({ error: err.message || 'Server error' });
+  }
+})
 module.exports = app;

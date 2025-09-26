@@ -1,5 +1,5 @@
 # Use a small Node image (arm64 compatible for Pi)
-FROM node:18-alpine
+FROM node:18-bullseye
 
 # Set working directory
 WORKDIR /app
@@ -7,6 +7,8 @@ WORKDIR /app
 # Copy package files and install dependencies first (for caching)
 COPY package*.json ./
 RUN npm install --production
+
+RUN npx playwright install --with-deps chromium
 
 # Copy the rest of the backend source
 COPY . .

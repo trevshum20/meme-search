@@ -1,0 +1,24 @@
+.addtiktok-container {
+  /* space for a clean max width if you like */
+  /* max-width: 760px; */
+}
+
+.addtiktok-pre {
+  max-height: 50vh;           /* keep response readable */
+  white-space: pre-wrap;       /* wrap long lines */
+  word-break: break-word;      /* avoid overflow */
+  color: white;
+}
+
+.addtiktok-toast-wrapper {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1050;              /* above most content */
+  max-width: 420px;
+  cursor: pointer;
+}
+
+.addtiktok-toast {
+  margin: 0;
+}

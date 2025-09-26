@@ -121,3 +121,13 @@
   .done-button:hover {
     background-color: #e60046;
   }
+
+/* right-align the "+ Add TikTok" link regardless of parent text alignment */
+.ts-add-link {
+  display: flex;
+  width: 100%;
+}
+
+.ts-add-link > a {
+  margin-left: auto;
+}
