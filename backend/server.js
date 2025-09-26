@@ -405,7 +405,7 @@ app.post('/api/ingest', async (req, res) => {
       userEmail,
       vectorLength: Array.isArray(vector) ? vector.length : undefined,
       meta: {
-        original_url: tiktokUrl,
+        original_url: meta.pageUrl || url,
         userContext: meta.userContext || '',
         userEmail,
         author: meta.author,
