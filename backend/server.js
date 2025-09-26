@@ -8,7 +8,7 @@ const {
   searchTikTokIndex,
   storeTikTokVector
 } = require("./services/vectorStore");
-const { getMemeDescriptionFromOpenAI, generateEmbedding } = require("./services/memeProcessor");
+const { getMemeDescriptionFromOpenAI, generateEmbeddingTikTok } = require("./services/memeProcessor");
 const { verifyAuth, verifyToken } = require("./services/authService");
 const {
   addMemeOwnershipRecord,
@@ -393,7 +393,7 @@ app.post('/api/ingest', async (req, res) => {
     }
 
     // 3) Vectorize
-    const vector = await generateEmbedding(textForEmbedding);
+    const vector = await generateEmbeddingTikTok(textForEmbedding);
 
     // 4) Store in Pinecone (with metadata from TikTokService)
     await storeTikTokVector(vector, url, userEmail, meta);
